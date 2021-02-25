@@ -338,3 +338,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/Lib/Valheim
+/Lib/Unstripped
+/Lib/BepInEx
