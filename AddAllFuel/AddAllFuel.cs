@@ -68,7 +68,7 @@ namespace AddAllFuel
             private static void Postfix(Smelter __instance, ref Switch sw, ref Humanoid user, ref ItemDrop.ItemData item)
             {
                 if (IsDebug)
-                    UnityEngine.Debug.Log("OnAddOre");
+                    Debug.Log("OnAddOre");
 
                 if (Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
                     !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value)
@@ -84,7 +84,7 @@ namespace AddAllFuel
 
                 // 追加するアイテム名
                 if (IsDebug)
-                    UnityEngine.Debug.Log(item.m_dropPrefab.name);
+                    Debug.Log(item.m_dropPrefab.name);
 
                 // アイテムの追加が許可されているか
                 bool isItemAllowed = Traverse.Create(__instance).Method("IsItemAllowed", item.m_dropPrefab.name).GetValue<bool>();
@@ -102,9 +102,9 @@ namespace AddAllFuel
                 if (IsDebug)
                 {
 
-                    UnityEngine.Debug.Log($"{item.m_shared.m_name}({item.m_stack})");
-                    UnityEngine.Debug.Log($"{queueSizeNow} / {__instance.m_maxOre}");
-                    UnityEngine.Debug.Log($"{queueSize}");
+                    Debug.Log($"{item.m_shared.m_name}({item.m_stack})");
+                    Debug.Log($"{queueSizeNow} / {__instance.m_maxOre}");
+                    Debug.Log($"{queueSize}");
                 }
 
                 // 投入
@@ -125,8 +125,8 @@ namespace AddAllFuel
             {
                 if (IsDebug)
                 {
-                    UnityEngine.Debug.Log("OnAddFuel");
-                    UnityEngine.Debug.Log(__instance.m_fuelItem.m_itemData.m_shared.m_name);
+                    Debug.Log("OnAddFuel");
+                    Debug.Log(__instance.m_fuelItem.m_itemData.m_shared.m_name);
                 }
 
                 if (Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
@@ -139,7 +139,7 @@ namespace AddAllFuel
                     return;
                 // 燃料が最大の場合
                 float fuelNow = Traverse.Create(__instance).Method("GetFuel").GetValue<float>();
-                if (fuelNow > (float)(__instance.m_maxFuel - 1))
+                if (fuelNow > __instance.m_maxFuel - 1)
                     return;
 
                 Inventory inventory = user.GetInventory();
