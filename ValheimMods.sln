@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ValheimMods", "ValheimMods\ValheimMods.csproj", "{75C96670-301F-4420-BB78-BB22A84A7988}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddAllFuel", "AddAllFuel\AddAllFuel.csproj", "{52BE6D2B-DAF1-446A-88A5-1C2E02280B51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{75C96670-301F-4420-BB78-BB22A84A7988}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75C96670-301F-4420-BB78-BB22A84A7988}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75C96670-301F-4420-BB78-BB22A84A7988}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52BE6D2B-DAF1-446A-88A5-1C2E02280B51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52BE6D2B-DAF1-446A-88A5-1C2E02280B51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52BE6D2B-DAF1-446A-88A5-1C2E02280B51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52BE6D2B-DAF1-446A-88A5-1C2E02280B51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
