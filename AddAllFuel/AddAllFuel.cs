@@ -101,7 +101,6 @@ namespace AddAllFuel
                 int queueSize = Math.Min(item.m_stack, queueSizeLeft);
                 if (IsDebug)
                 {
-
                     Debug.Log($"{item.m_shared.m_name}({item.m_stack})");
                     Debug.Log($"{queueSizeNow} / {__instance.m_maxOre}");
                     Debug.Log($"{queueSize}");
@@ -155,6 +154,12 @@ namespace AddAllFuel
                 // 残り投入数
                 int fuelLeft = (int)((float)(__instance.m_maxFuel) - fuelNow);
                 int fuelSize = Math.Min(item.m_stack, fuelLeft);
+                if(IsDebug)
+                {
+                    Debug.Log($"{item.m_shared.m_name}({item.m_stack})");
+                    Debug.Log($"{fuelNow} / {__instance.m_maxFuel}");
+                    Debug.Log($"{fuelSize}");
+                }
 
                 // 投入
                 inventory.RemoveItem(item, fuelSize);
