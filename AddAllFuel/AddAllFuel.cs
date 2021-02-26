@@ -65,7 +65,7 @@ namespace AddAllFuel
         [HarmonyPatch(typeof(Smelter), "OnAddOre")]
         public static class ModifySmelterOnAddOre
         {
-            private static void Postfix(Smelter __instance, ref Switch sw, ref Humanoid user)
+            private static void Postfix(Smelter __instance, ref Humanoid user)
             {
                 if (IsDebug)
                     Debug.Log("OnAddOre");
