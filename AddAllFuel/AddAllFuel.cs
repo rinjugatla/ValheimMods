@@ -65,7 +65,7 @@ namespace AddAllFuel
         [HarmonyPatch(typeof(Smelter), "OnAddOre")]
         public static class ModifySmelterOnAddOre
         {
-            private static void Postfix(Smelter __instance, Humanoid user)
+            private static void Postfix(Smelter __instance, ref Switch sw, ref Humanoid user, ref ItemDrop.ItemData item)
             {
                 if (IsDebug)
                     Debug.Log("OnAddOre");
@@ -74,10 +74,13 @@ namespace AddAllFuel
                     !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value)
                     return;
 
-                // インベントリからアイテムを取得
-                ItemDrop.ItemData item = Traverse.Create(__instance).Method("FindCookableItem", user.GetInventory()).GetValue<ItemDrop.ItemData>();
                 if (item == null)
-                    return;
+                {
+                    // インベントリからアイテムを取得
+                    item = Traverse.Create(__instance).Method("FindCookableItem", user.GetInventory()).GetValue<ItemDrop.ItemData>();
+                    if (item == null)
+                        return;
+                }
 
                 // 追加するアイテム名
                 if (IsDebug)
