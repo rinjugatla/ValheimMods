@@ -65,7 +65,7 @@ namespace AddAllFuel
         [HarmonyPatch(typeof(Smelter), "OnAddOre")]
         public static class ModifySmelterOnAddOre
         {
-            private static void Postfix(Smelter __instance, ref Switch sw, ref Humanoid user, ref ItemDrop.ItemData item)
+            private static void Postfix(Smelter __instance, ref Switch sw, ref Humanoid user)
             {
                 if (IsDebug)
                     Debug.Log("OnAddOre");
@@ -74,13 +74,10 @@ namespace AddAllFuel
                     !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value)
                     return;
 
+                // インベントリからアイテムを取得
+                ItemDrop.ItemData item = FindCookableItem(__instance, user.GetInventory());
                 if (item == null)
-                {
-                    // インベントリからアイテムを取得
-                    item = Traverse.Create(__instance).Method("FindCookableItem", user.GetInventory()).GetValue<ItemDrop.ItemData>();
-                    if (item == null)
-                        return;
-                }
+                    return;
 
                 // 追加するアイテム名
                 if (IsDebug)
@@ -113,6 +110,28 @@ namespace AddAllFuel
                 {
                     m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
                 }
+            }
+
+            /// <summary>
+            /// インベントリから投入可能なアイテムを取得
+            /// </summary>
+            /// <remarks>
+            /// 「Craft Build and Smelt From Container」MODで既存の処理を書き換えているためDupeが発生
+            /// 指定のインベントリからアイテムを探索するため独自実装
+            /// </remarks>
+            /// <param name="__instance">インスタンス</param>
+            /// <param name="inventory">インベントリ</param>
+            /// <returns></returns>
+            private static ItemDrop.ItemData FindCookableItem(Smelter __instance, Inventory inventory)
+            {
+                foreach (Smelter.ItemConversion itemConversion in __instance.m_conversion)
+                {
+                    ItemDrop.ItemData item = inventory.GetItem(
+                        itemConversion.m_from.m_itemData.m_shared.m_name);
+                    if (item != null)
+                        return item;
+                }
+                return null;
             }
         }
 
