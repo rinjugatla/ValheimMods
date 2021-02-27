@@ -125,19 +125,18 @@ namespace GetItemCommand
                 }
 
                 // アイテムのポップ位置設定
-                Vector3 position = Player.m_localPlayer.transform.position;
-                Vector3 modify = new Vector3(50, 50, 0);
-                GameObject itemObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab, position + modify, default);
-                if (itemObject == null)
+                GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab);
+                if (gameObject == null)
                 {
                     Utility.PostText(__instance, $"Failed to create the ItemObject({name}).");
                     return false;
                 }
 
-                ItemDrop drop = itemObject.GetComponent<ItemDrop>();
+                ItemDrop drop = gameObject.GetComponent<ItemDrop>();
                 if (drop == null || drop.m_itemData.m_shared.m_icons.Length == 0)
                 {
                     Utility.PostText(__instance, $"Failed to create the ItemDrop({name}).");
+                    Destroy(gameObject);
                     return false;
                 }
 
@@ -157,6 +156,8 @@ namespace GetItemCommand
                 string username = profile.GetName();
                 long userid = profile.GetPlayerID();
                 string message = $"created item({name}) * {giveNumber} with {PluginName}.";
+
+                Destroy(gameObject);
 
                 // 記録
                 Utility.PostText(__instance, $"I {message}");
