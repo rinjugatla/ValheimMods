@@ -152,7 +152,8 @@ namespace GetItemCommand
                 drop.m_itemData.m_stack = giveNumber;
 
                 // アイテムを付与
-                Player.m_localPlayer.GetInventory().AddItem(drop.m_itemData);
+                Player.m_localPlayer.GetInventory().AddItem(name, giveNumber, drop.m_itemData.m_quality, drop.m_itemData.m_variant, 
+                    Player.m_localPlayer.GetPlayerID(), Player.m_localPlayer.GetPlayerName());
                 PlayerProfile profile = Game.instance.GetPlayerProfile();
                 string username = profile.GetName();
                 long userid = profile.GetPlayerID();
