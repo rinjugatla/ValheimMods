@@ -70,13 +70,14 @@ namespace GetItemCommand
                     Debug.Log("InputText");
 
                 string text = __instance.m_input.text;
-                if (text.ToLower() == "/getitem")
+                string lower = text.ToLower();
+                if (lower == "/getitem" || lower == "/gi")
                 {
                     Utility.PostText(__instance, "/getitem [name] - You get the maximum number of items.");
                     Utility.PostText(__instance, "/getitem [name] [int] - You get [int] number of items.");
                     return false;
                 }
-                else if(text.ToLower().StartsWith("/getitem "))
+                else if(lower.StartsWith("/getitem ") || lower.StartsWith("/gi "))
                     return GetItem(__instance, text);
                 
                 return true;
