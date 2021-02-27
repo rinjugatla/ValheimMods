@@ -70,15 +70,26 @@ namespace GetItemCommand
                     Debug.Log("InputText");
 
                 string text = __instance.m_input.text;
-                if(text.ToLower() == "/getitem")
+                if (text.ToLower() == "/getitem")
                 {
                     Utility.PostText(__instance, "/getitem [name] - You get the maximum number of items.");
                     Utility.PostText(__instance, "/getitem [name] [int] - You get [int] number of items.");
                     return false;
                 }
-                if (!text.ToLower().StartsWith("/getitem "))
-                    return true;
+                else if(text.ToLower().StartsWith("/getitem "))
+                    return GetItem(__instance, text);
+                
+                return true;
+            }
 
+            /// <summary>
+            /// アイテム獲得
+            /// </summary>
+            /// <param name="__instance"></param>
+            /// <param name="text">入力文字列</param>
+            /// <returns></returns>
+            private static bool GetItem(Chat __instance, string text)
+            {
                 // パラメータ取得
                 string[] array = text.Split(' ');
                 if (array.Length == 1)
@@ -125,7 +136,7 @@ namespace GetItemCommand
                 // スタックを最大数または指定数に変更
                 int giveNumber = 0;
                 if (number == 0)
-                     giveNumber = drop.m_itemData.m_shared.m_maxStackSize;
+                    giveNumber = drop.m_itemData.m_shared.m_maxStackSize;
                 else
                     giveNumber = Math.Min(
                         drop.m_itemData.m_shared.m_maxStackSize,
@@ -138,7 +149,7 @@ namespace GetItemCommand
                 string username = profile.GetName();
                 long userid = profile.GetPlayerID();
                 string message = $"created item({name}) * {giveNumber} with {PluginName}.";
-                
+
                 // 記録
                 Utility.PostText(__instance, $"I {message}");
                 ZLog.Log($"{username}({userid}) {message}");
