@@ -15,7 +15,7 @@ namespace AutoItemCollectContainer
 	{
 		private const string PluginGuid = "rin_jugatla.AutoItemCollectContainer";
 		private const string PluginName = "AutoItemCollectContainer";
-		private const string PluginVersion = "1.0.0";
+		private const string PluginVersion = "0.0.1";
 		/// <summary>
 		/// デバッグが有効か
 		/// </summary>
