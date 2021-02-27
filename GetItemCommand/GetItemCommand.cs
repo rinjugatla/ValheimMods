@@ -135,7 +135,7 @@ namespace GetItemCommand
                 }
 
                 ItemDrop drop = itemObject.GetComponent<ItemDrop>();
-                if (drop == null)
+                if (drop == null || drop.m_itemData.m_shared.m_icons.Length == 0)
                 {
                     Utility.PostText(__instance, $"Failed to create the ItemDrop({name}).");
                     return false;
@@ -184,7 +184,7 @@ namespace GetItemCommand
                     List<ItemDrop> drops = ObjectDB.instance.GetAllItems(type, "");
                     // iconが存在しない場合は無効なアイテム
                     sb.AppendLine(string.Join("\n", 
-                        drops.Where(n => n.m_itemData.m_shared.m_icons.Length > 0).Select(n => n.name)));
+                        drops.Where(n => n.m_itemData.m_shared.m_icons.Length != 0).Select(n => n.name)));
                 }
 
                 try
