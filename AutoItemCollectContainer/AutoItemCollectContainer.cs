@@ -98,16 +98,16 @@ namespace AutoItemCollectContainer
 				// 回収範囲内のコンテナ取得
 				foreach (var container in Containers)
 				{
+					Inventory inventory = container.GetInventory();
+					if (inventory == null)
+						continue;
+
 					Vector3 itemPosition = __instance.transform.position;
 					Vector3 containerPosition = container.transform.position;
 
 					// 指定距離以上離れている場合は処理を飛ばす
 					float distance = (itemPosition - containerPosition).sqrMagnitude;
 					if (distance > range)
-						continue;
-
-					Inventory inventory = container.GetInventory();
-					if (inventory == null)
 						continue;
 
 					// アイテムをコンテナに移動
