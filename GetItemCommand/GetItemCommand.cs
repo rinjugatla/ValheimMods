@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -79,7 +80,13 @@ namespace GetItemCommand
                 }
                 else if(lower.StartsWith("/getitem ") || lower.StartsWith("/gi "))
                     return GetItem(__instance, text);
-                
+
+                if (lower == "/getitemlist" || lower == "/gil")
+                {
+                    return ExportItemList(__instance);
+                }
+
+
                 return true;
             }
 
@@ -154,6 +161,39 @@ namespace GetItemCommand
                 // 記録
                 Utility.PostText(__instance, $"I {message}");
                 ZLog.Log($"{username}({userid}) {message}");
+
+                return false;
+            }
+
+            /// <summary>
+            /// アイテムリストファイルを出力
+            /// </summary>
+            /// <remarks>
+            /// 出力先: <GameDirectory>/BepInEx/plugins/
+            /// </remarks>
+            /// <returns></returns>
+            private static bool ExportItemList(Chat __instance)
+            {
+                string filepath = @".\BepInEx\plugins\GetItemCommand_ItemList.txt";
+
+
+                StringBuilder sb = new StringBuilder();
+                foreach (ItemDrop.ItemData.ItemType type in Enum.GetValues(typeof(ItemDrop.ItemData.ItemType)))
+                {
+                    sb.Append($"-----{Enum.GetName(typeof(ItemDrop.ItemData.ItemType), type)}-----\n");
+                    List<ItemDrop> drops = ObjectDB.instance.GetAllItems(type, "");
+                    sb.AppendLine(string.Join("\n", drops.Select(n => n.name)));
+                }
+
+                try
+                {
+                    using (StreamWriter sw = new StreamWriter(filepath, false, Encoding.UTF8))
+                        sw.Write(sb.ToString());
+                }
+                catch (Exception ex)
+                {
+                    Utility.PostText(__instance, ex.Message);
+                }
 
                 return false;
             }
