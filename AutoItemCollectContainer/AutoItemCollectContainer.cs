@@ -89,15 +89,15 @@ namespace AutoItemCollectContainer
 		{
 			private static void Postfix(ItemDrop __instance)
 			{
+				if (__instance == null || __instance.m_itemData == null)
+					return;
+
 				// 回収範囲
 				float range = CollectRnage.Value * CollectRnage.Value;
 				
-				// コンテナとの距離
+				// 回収範囲内のコンテナ取得
 				foreach (var container in Containers)
 				{
-					if (__instance == null || __instance.m_itemData == null)
-						continue;
-
 					Vector3 itemPosition = __instance.transform.position;
 					Vector3 containerPosition = container.transform.position;
 
