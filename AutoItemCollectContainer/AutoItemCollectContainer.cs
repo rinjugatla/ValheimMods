@@ -32,6 +32,16 @@ namespace AutoItemCollectContainer
 		/// 自動回収範囲
 		/// </summary>
 		private static ConfigEntry<float> CollectRnage;
+        /// <summary>
+        /// アイテム収納チェックのタイミング
+        /// </summary>
+        /// <remarks>
+        /// true: Start アイテム作成時のみ
+        ///  1度のみの実行なので効率的
+        /// false: SlowUpdate アイテムアップデート時
+        ///  アイテムが移動する場合などに有効？同じアイテムに対して複数回処理を行うため処理が重い
+        /// </remarks>
+        private static ConfigEntry<bool> IsHookStart;
 		/// <summary>
 		/// 最初のコンテナに収納するか
 		/// </summary>
@@ -54,8 +64,14 @@ namespace AutoItemCollectContainer
 			IsEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable this mod");
 			NexusID = Config.Bind<int>("General", "NexusID", -1, "Nexus mod ID for updates");
 			CollectRnage = Config.Bind<float>("General", "CollectRange", 10f, "Range for automatic collection of items.");
-			IsFirstContainer = Config.Bind<bool>("General", "FirstContainer", true, 
-				"true: Store items in the first container detected. false: Use the container closest to the item in the collection range.");
+            IsHookStart = Config.Bind<bool>("General", "HookStart", true,
+                "You can set the timing for storing items in the chest. " +
+                "true: Process only when the item is created. " +
+                "This is more efficient because it is executed only once. " +
+                "false: Processing is performed when the item position is updated. " +
+                "This is useful when items are being moved.However, since the same item will be processed multiple times, the process will be slow.");
+            IsFirstContainer = Config.Bind<bool>("General", "FirstContainer", true,
+                "true: Store items in the first container detected. false: Use the container closest to the item in the collection range.");
 
 			if (!IsEnabled.Value)
 				return;
@@ -88,48 +104,114 @@ namespace AutoItemCollectContainer
 			}
 		}
 
-		/// <summary>
-		/// アイテムをコンテナに移動
-		/// </summary>
-		[HarmonyPatch(typeof(ItemDrop), "SlowUpdate")]
-		public static class ModifyItemDropSlowUpdate
-		{
-			private static void Postfix(ItemDrop __instance)
-			{
-				if (__instance == null || __instance.m_itemData == null)
-					return;
+        /// <summary>
+        /// アイテムオブジェクト作成時
+        /// </summary>
+        [HarmonyPatch(typeof(ItemDrop), "Start")]
+        private static class ModifyItemDropStart
+        {
+            private static void Postfix(ItemDrop __instance)
+            {
+                if (IsHookStart.Value)
+                    ContainerController.StoreItemNearbyContainer(__instance);
+            }
+        }
 
-				// 回収範囲
-				float range = CollectRnage.Value * CollectRnage.Value;
-				
-				// 回収範囲内のコンテナ取得
-				foreach (var container in Containers)
-				{
-					Inventory inventory = container.GetInventory();
-					if (inventory == null)
-						continue;
+        /// <summary>
+        /// アイテムオブジェクトアップデート時
+        /// </summary>
+        [HarmonyPatch(typeof(ItemDrop), "SlowUpdate")]
+        private static class ModifyItemDropSlowUpdate
+        {
+            private static void Postfix(ItemDrop __instance)
+            {
+                if (!IsHookStart.Value)
+                    ContainerController.StoreItemNearbyContainer(__instance);
+            }
+        }
 
-					Vector3 itemPosition = __instance.transform.position;
-					Vector3 containerPosition = container.transform.position;
+        /// <summary>
+        /// チェスト操作
+        /// </summary>
+		private static class ContainerController
+        {
+            /// <summary>
+            /// アイテム近くのチェストを探索、発見時は収納
+            /// </summary>
+            /// <param name="__instance"></param>
+            public static void StoreItemNearbyContainer(ItemDrop __instance)
+            {
+                if (__instance == null || __instance.m_itemData == null)
+                    return;
 
-					// 指定距離以上離れている場合は処理を飛ばす
-					float distance = (itemPosition - containerPosition).sqrMagnitude;
-					if (distance > range)
-						continue;
+                if (Containers.Count == 0)
+                    return;
 
-					// アイテムをコンテナに移動
-					if (inventory.CanAddItem(__instance.m_itemData, __instance.m_itemData.m_stack))
-					{
-						if (IsDebug)
-							Debug.Log($"{__instance.name} has been stored in the container.");
+                // 回収範囲
+                float range = CollectRnage.Value * CollectRnage.Value;
 
-						inventory.AddItem(__instance.m_itemData);
-						Traverse.Create(__instance).Method("Save").GetValue();
-						Destroy(__instance.gameObject);
-						return;
-					}
-				}
-			}
-		}
+                // 回収範囲内のコンテナ取得
+                Container target = null;
+                float prevDistance = range * 2;
+                foreach (var container in Containers)
+                {
+                    if (container == null || container.GetInventory() == null)
+                        continue;
+
+                    Vector3 itemPosition = __instance.transform.position;
+                    Vector3 containerPosition = container.transform.position;
+
+                    // 指定距離以上離れている場合は処理を飛ばす
+                    float distance = (itemPosition - containerPosition).sqrMagnitude;
+                    if (distance > range)
+                        continue;
+
+                    if (IsFirstContainer.Value)
+                    {
+                        if (!container.GetInventory().CanAddItem(__instance.m_itemData, __instance.m_itemData.m_stack))
+                            continue;
+                        if (IsDebug)
+                            Debug.Log($"{__instance.name}({__instance.m_itemData.m_stack}) -> {distance} CanPickup: {__instance.CanPickup()}");
+                        target = container;
+                        break;
+                    }
+                    else
+                    {
+                        // 前回探索済みコンテナとアイテムの距離が近い場合はターゲットを更新
+                        if (distance < prevDistance)
+                        {
+                            if (IsDebug)
+                                Debug.Log($"The target container has been updated.");
+                            target = container;
+                            prevDistance = distance;
+                        }
+                    }
+                }
+
+                if (target == null)
+                    return;
+
+                StoreItemToContainer(target, __instance);
+            }
+
+            /// <summary>
+            /// アイテムをコンテナに収納
+            /// </summary>
+            /// <param name="container">コンテナ</param>
+            /// <param name="drop">アイテム</param>
+            private static void StoreItemToContainer(Container container, ItemDrop drop)
+            {
+                // アイテムをコンテナに移動
+                Inventory inventory = container.GetInventory();
+                if (inventory.CanAddItem(drop.m_itemData, drop.m_itemData.m_stack))
+                {
+                    if (IsDebug)
+                        Debug.Log($"{drop.name} has been stored in the container.");
+
+                    if (inventory.AddItem(drop.m_itemData))
+                        Traverse.Create(drop).Field("m_nview").GetValue<ZNetView>().Destroy();
+                }
+            }
+        }
 	}
 }
