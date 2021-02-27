@@ -33,12 +33,17 @@ namespace AutoItemCollectContainer
 		/// </summary>
 		private static ConfigEntry<float> CollectRnage;
 		/// <summary>
+		/// 最初のコンテナに収納するか
+		/// </summary>
+		private static ConfigEntry<bool> IsFirstContainer;
+		/// <summary>
 		/// 自動アップデート用のNexusID
 		/// </summary>
 		/// <remarks>
 		/// https://www.nexusmods.com/valheim/mods/102
 		/// </remarks>
 		public static ConfigEntry<int> NexusID;
+
 		/// <summary>
 		/// コンテナ
 		/// </summary>
@@ -48,7 +53,9 @@ namespace AutoItemCollectContainer
 		{
 			IsEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable this mod");
 			NexusID = Config.Bind<int>("General", "NexusID", -1, "Nexus mod ID for updates");
-			CollectRnage = Config.Bind<float>("General", "CollectRange", 10f, "Auto item collect range");
+			CollectRnage = Config.Bind<float>("General", "CollectRange", 10f, "Range for automatic collection of items.");
+			IsFirstContainer = Config.Bind<bool>("General", "FirstContainer", true, 
+				"true: Store items in the first container detected. false: Use the container closest to the item in the collection range.");
 
 			if (!IsEnabled.Value)
 				return;
