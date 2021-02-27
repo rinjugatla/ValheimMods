@@ -29,7 +29,7 @@ namespace GetItemCommand
         /// </summary>
         public static ConfigEntry<bool> IsEnabled;
         /// <summary>
-        /// 
+        /// 使用確認鍵(MOD配布ページに記載)
         /// </summary>
         public static ConfigEntry<string> AgreementKey;
         /// <summary>
