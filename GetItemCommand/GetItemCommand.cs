@@ -149,7 +149,6 @@ namespace GetItemCommand
                     giveNumber = Math.Min(
                         drop.m_itemData.m_shared.m_maxStackSize,
                         (int)number);
-                drop.m_itemData.m_stack = giveNumber;
 
                 // アイテムを付与
                 Player.m_localPlayer.GetInventory().AddItem(name, giveNumber, drop.m_itemData.m_quality, drop.m_itemData.m_variant, 
