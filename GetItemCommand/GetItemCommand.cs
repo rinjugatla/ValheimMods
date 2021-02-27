@@ -182,7 +182,9 @@ namespace GetItemCommand
                 {
                     sb.Append($"-----{Enum.GetName(typeof(ItemDrop.ItemData.ItemType), type)}-----\n");
                     List<ItemDrop> drops = ObjectDB.instance.GetAllItems(type, "");
-                    sb.AppendLine(string.Join("\n", drops.Select(n => n.name)));
+                    // iconが存在しない場合は無効なアイテム
+                    sb.AppendLine(string.Join("\n", 
+                        drops.Where(n => n.m_itemData.m_shared.m_icons.Length > 0).Select(n => n.name)));
                 }
 
                 try
