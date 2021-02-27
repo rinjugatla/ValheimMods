@@ -70,7 +70,7 @@ namespace AutoItemCollectContainer
                 "This is more efficient because it is executed only once. " +
                 "false: Processing is performed when the item position is updated. " +
                 "This is useful when items are being moved.However, since the same item will be processed multiple times, the process will be slow.");
-            IsFirstContainer = Config.Bind<bool>("General", "FirstContainer", true,
+            IsFirstContainer = Config.Bind<bool>("General", "FirstContainer", false,
                 "true: Store items in the first container detected. false: Use the container closest to the item in the collection range.");
 
 			if (!IsEnabled.Value)
@@ -209,7 +209,10 @@ namespace AutoItemCollectContainer
                         Debug.Log($"{drop.name} has been stored in the container.");
 
                     if (inventory.AddItem(drop.m_itemData))
+                    {
                         Traverse.Create(drop).Field("m_nview").GetValue<ZNetView>().Destroy();
+                    }
+                        
                 }
             }
         }
