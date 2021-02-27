@@ -62,7 +62,7 @@ namespace AutoItemCollectContainer
 		private void Awake()
 		{
 			IsEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable this mod");
-			NexusID = Config.Bind<int>("General", "NexusID", -1, "Nexus mod ID for updates");
+			NexusID = Config.Bind<int>("General", "NexusID", 180, "Nexus mod ID for updates");
 			CollectRnage = Config.Bind<float>("General", "CollectRange", 10f, "Range for automatic collection of items.");
             IsHookStart = Config.Bind<bool>("General", "HookStart", true,
                 "You can set the timing for storing items in the chest. " +
