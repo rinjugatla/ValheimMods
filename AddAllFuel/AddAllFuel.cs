@@ -47,6 +47,13 @@ namespace AddAllFuel
         /// true: Eで一括投入、　ModifierKey + Eで1つずつ投入
         /// </remarks>
         public static ConfigEntry<bool> IsReverseModifierMode;
+        /// <summary>
+        /// 一括投入に使用しない木材、鉱石名
+        /// </summary>
+        /// <remarks>
+        /// $item_wood, $item_finewood, $item_roundlog
+        /// </remarks>
+        public static IReadOnlyList<string> ExcludeNames;
 
         private void Awake()
         {
@@ -54,6 +61,9 @@ namespace AddAllFuel
             NexusID = Config.Bind<int>("General", "NexusID", 107, "Nexus mod ID for updates");
             ModifierKey = Config.Bind<string>("General", "ModifierKey", "left shift", "Modifier keys for using mods");
             IsReverseModifierMode = Config.Bind<bool>("General", "IsReverseModifierMode", false, "false: Batch submit with ModifierKey + UseKey. true: Batch submit with UseKey.");
+            ExcludeNames = Config.Bind<string>("General", "ExcludeNames", "", 
+                "Name of item not to be used as fuel/ore. Setting example: $item_finewood,$item_roundlog").Value.
+                Replace(" ", "").Split(',').ToList();
 
             if (!IsEnabled.Value)
                 return;
@@ -113,21 +123,25 @@ namespace AddAllFuel
             }
 
             /// <summary>
-            /// インベントリから投入可能なアイテムを取得
+            /// インベントリから投入可能なアイテム(木材、鉱石)を取得
             /// </summary>
             /// <remarks>
             /// 「Craft Build and Smelt From Container」MODで既存の処理を書き換えているためDupeが発生
             /// 指定のインベントリからアイテムを探索するため独自実装
+            /// 設定で除外されているアイテム以外を使用
             /// </remarks>
             /// <param name="__instance">インスタンス</param>
             /// <param name="inventory">インベントリ</param>
             /// <returns></returns>
             private static ItemDrop.ItemData FindCookableItem(Smelter __instance, Inventory inventory)
             {
-                foreach (Smelter.ItemConversion itemConversion in __instance.m_conversion)
+                // 除外されている燃料以外のアイテム取得
+                IEnumerable<string> names = __instance.m_conversion.
+                    Where(n => !ExcludeNames.Contains(n.m_from.m_itemData.m_shared.m_name)).
+                    Select(n => n.m_from.m_itemData.m_shared.m_name);
+                foreach (string name in names)
                 {
-                    ItemDrop.ItemData item = inventory.GetItem(
-                        itemConversion.m_from.m_itemData.m_shared.m_name);
+                    ItemDrop.ItemData item = inventory.GetItem(name);
                     if (item != null)
                         return item;
                 }
