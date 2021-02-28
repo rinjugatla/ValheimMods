@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetItemCommand", "GetItemCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoItemCollectContainer", "AutoItemCollectContainer\AutoItemCollectContainer.csproj", "{61B20473-0FE6-4F3B-97EC-81A86541C8DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaveCommand", "SaveCommand\SaveCommand.csproj", "{EA3E644D-7EAB-4082-9A56-EFDE0736095B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{61B20473-0FE6-4F3B-97EC-81A86541C8DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61B20473-0FE6-4F3B-97EC-81A86541C8DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61B20473-0FE6-4F3B-97EC-81A86541C8DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA3E644D-7EAB-4082-9A56-EFDE0736095B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA3E644D-7EAB-4082-9A56-EFDE0736095B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA3E644D-7EAB-4082-9A56-EFDE0736095B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA3E644D-7EAB-4082-9A56-EFDE0736095B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
