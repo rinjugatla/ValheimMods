@@ -136,7 +136,6 @@ namespace GetItemCommand
                 if (drop == null || drop.m_itemData.m_shared.m_icons.Length == 0)
                 {
                     Utility.PostText(__instance, $"Failed to create the ItemDrop({name}).");
-                    Destroy(gameObject);
                     return false;
                 }
 
@@ -156,8 +155,6 @@ namespace GetItemCommand
                 string username = profile.GetName();
                 long userid = profile.GetPlayerID();
                 string message = $"created item({name}) * {giveNumber} with {PluginName}.";
-
-                Destroy(gameObject);
 
                 // 記録
                 Utility.PostText(__instance, $"I {message}");
