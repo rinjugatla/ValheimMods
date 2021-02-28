@@ -47,6 +47,10 @@ namespace SaveCommand
 		/// 前回のセーブ時間
 		/// </summary>
 		private static DateTime PrevSaveTime = DateTime.Now;
+		/// <summary>
+		/// ヒューマノイド
+		/// </summary>
+		private static Humanoid HumanoidInstance;
 
 		private void Awake()
 		{
@@ -58,14 +62,17 @@ namespace SaveCommand
 			if (SaveHotKey.Value == "")
 				SaveHotKey.Value = "p";
 
+#if !Debug
 			if (SaveIntervalMinutes.Value < 3)
 				SaveIntervalMinutes.Value = 3;
+#endif
 
             if (!IsEnabled.Value)
 				return;
 
 			Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
 		}
+
 
 		/// <summary>
 		/// ホットキー処理
@@ -76,6 +83,15 @@ namespace SaveCommand
             {
 				Utility.Save();
             }
+        }
+
+		[HarmonyPatch(typeof(Humanoid), "Awake")]
+		private static class ModifyHumanoidAwake
+        {
+			private static void Postfix(Humanoid __instance)
+            {
+				HumanoidInstance = __instance;
+			}
         }
 
 		/// <summary>
@@ -107,18 +123,33 @@ namespace SaveCommand
 			/// ワールドデータ、プレイヤーデータをセーブ
 			/// </summary>
 			public static void Save()
-            {
+			{
 				// トップメニューの場合は処理しない
 				if (Player.m_localPlayer == null)
 					return;
 
-				double elapsedTime = (DateTime.Now - PrevSaveTime).TotalMinutes;
-				if (!ZNet.instance.IsSaving() && SaveIntervalMinutes.Value < elapsedTime)
+				int elapsedTime = (int)(DateTime.Now - PrevSaveTime).TotalMinutes;
+				int leftTime = SaveIntervalMinutes.Value - elapsedTime;
+				if (leftTime > 0)
 				{
-					ZNet.instance.ConsoleSave();
-					Game.instance.GetPlayerProfile().Save();
-					PrevSaveTime = DateTime.Now;
+					HumanoidInstance.Message(MessageHud.MessageType.Center,
+						$"The save interval is too short.\nPlease run it after {leftTime} minutes.", 0, null);
+					return;
 				}
+
+				if (ZNet.instance.IsSaving())
+                {
+					HumanoidInstance.Message(MessageHud.MessageType.Center,
+						$"The save process is already in progress.", 0, null);
+					return;
+				}
+
+				ZNet.instance.ConsoleSave();
+				Game.instance.GetPlayerProfile().Save();
+				PrevSaveTime = DateTime.Now;
+
+				HumanoidInstance.Message(MessageHud.MessageType.Center,$"The save process is complete.", 0, null);
+				return;
 			}
         }
 	}
