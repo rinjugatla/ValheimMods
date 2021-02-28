@@ -35,6 +35,10 @@
       <HintPath>..\..\ValheimModsBak\Lib\BepInEx\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="assembly_utils">
+      <HintPath>..\Lib\Valheim\assembly_utils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="assembly_valheim">
       <HintPath>..\..\ValheimModsBak\Lib\Valheim\assembly_valheim.dll</HintPath>
       <Private>False</Private>
