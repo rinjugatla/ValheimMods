@@ -51,15 +51,15 @@ namespace SaveCommand
 		private void Awake()
 		{
 			IsEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable this mod.");
-			NexusID = Config.Bind<int>("General", "NexusID", -1, "Nexus mod ID for updates.");
+			NexusID = Config.Bind<int>("General", "NexusID", 190, "Nexus mod ID for updates.");
 			SaveHotKey = Config.Bind<string>("General", "SaveHotKey", "p", "Save hot key.");
-			SaveIntervalMinutes = Config.Bind<int>("General", "SaveIntervalMinutes", 1, "Save interval.");
+			SaveIntervalMinutes = Config.Bind<int>("General", "SaveIntervalMinutes", 3, "Save interval.");
 
 			if (SaveHotKey.Value == "")
 				SaveHotKey.Value = "p";
 
-			if (SaveIntervalMinutes.Value < 1)
-				SaveIntervalMinutes.Value = 1;
+			if (SaveIntervalMinutes.Value < 3)
+				SaveIntervalMinutes.Value = 3;
 
             if (!IsEnabled.Value)
 				return;
