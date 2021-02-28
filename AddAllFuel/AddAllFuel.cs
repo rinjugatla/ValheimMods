@@ -54,6 +54,10 @@ namespace AddAllFuel
         /// $item_wood, $item_finewood, $item_roundlog
         /// </remarks>
         public static IReadOnlyList<string> ExcludeNames;
+        /// <summary>
+        /// 一括投入しない場合に除外アイテムの使用を許可するか
+        /// </summary>
+        public static ConfigEntry<bool> IsAllowAddOneExcludeItem;
 
         private void Awake()
         {
@@ -62,8 +66,8 @@ namespace AddAllFuel
             ModifierKey = Config.Bind<string>("General", "ModifierKey", "left shift", "Modifier keys for using mods");
             IsReverseModifierMode = Config.Bind<bool>("General", "IsReverseModifierMode", false, "false: Batch submit with ModifierKey + UseKey. true: Batch submit with UseKey.");
             ExcludeNames = Config.Bind<string>("General", "ExcludeNames", "", 
-                "Name of item not to be used as fuel/ore. Setting example: $item_finewood,$item_roundlog").Value.
-                Replace(" ", "").Split(',').ToList();
+                "Name of item not to be used as fuel/ore. Setting example: $item_finewood,$item_roundlog").Value.Replace(" ", "").Split(',').ToList();
+            IsAllowAddOneExcludeItem = Config.Bind<bool>("General", "AllowAddOneExcludeItem", true, "Allow the addition of excluded items if you don't want to do batch processing?");
 
             if (!IsEnabled.Value)
                 return;
@@ -75,37 +79,55 @@ namespace AddAllFuel
         [HarmonyPatch(typeof(Smelter), "OnAddOre")]
         public static class ModifySmelterOnAddOre
         {
-            private static void Postfix(Smelter __instance, ref Humanoid user)
+            private static bool Prefix(Smelter __instance, ref Humanoid user, ref bool __result)
             {
                 if (IsDebug)
                     Debug.Log("OnAddOre");
 
-                if (Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
-                    !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value)
-                    return;
+                __result = false;
 
+                // アイテムの追加方法
+                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
+                                !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
+
+                #region 既存メソッドの処理
                 // インベントリからアイテムを取得
-                ItemDrop.ItemData item = FindCookableItem(__instance, user.GetInventory());
-                if (item == null)
-                    return;
+                ItemDrop.ItemData item = FindCookableItem(__instance, user.GetInventory(), isAddOne);
+                if(item == null)
+                {
+                    user.Message(MessageHud.MessageType.Center, "$msg_noprocessableitems", 0, null);
+                    return false;
+                }
+                
+                // アイテムの追加が許可されているか
+                if (!Traverse.Create(__instance).Method("IsItemAllowed", item.m_dropPrefab.name).GetValue<bool>())
+                {
+                    user.Message(MessageHud.MessageType.Center, "$msg_wontwork", 0, null);
+                    return false;
+                }
 
                 // 追加するアイテム名
-                if (IsDebug)
-                    Debug.Log(item.m_dropPrefab.name);
-
-                // アイテムの追加が許可されているか
-                bool isItemAllowed = Traverse.Create(__instance).Method("IsItemAllowed", item.m_dropPrefab.name).GetValue<bool>();
-                if (!isItemAllowed)
-                    return;
+                ZLog.Log("trying to add " + item.m_shared.m_name);
 
                 // 現在の投入数
                 int queueSizeNow = Traverse.Create(__instance).Method("GetQueueSize").GetValue<int>();
                 if (queueSizeNow >= __instance.m_maxOre)
-                    return;
+                {
+                    user.Message(MessageHud.MessageType.Center, "$msg_itsfull", 0, null);
+                    return false;
+                }
 
-                // 残り投入数
-                int queueSizeLeft = __instance.m_maxOre - queueSizeNow;
-                int queueSize = Math.Min(item.m_stack, queueSizeLeft);
+                user.Message(MessageHud.MessageType.Center, "$msg_added " + item.m_shared.m_name, 0, null);
+                #endregion
+                
+                // 投入数
+                int queueSize = 1;
+                if (!isAddOne)
+                {
+                    int queueSizeLeft = __instance.m_maxOre - queueSizeNow;
+                    queueSize = Math.Min(item.m_stack, queueSizeLeft);
+                }
+
                 if (IsDebug)
                 {
                     Debug.Log($"{item.m_shared.m_name}({item.m_stack})");
@@ -120,6 +142,10 @@ namespace AddAllFuel
                 {
                     m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
                 }
+
+                // 後処理
+                __result = true;
+                return false;
             }
 
             /// <summary>
@@ -132,13 +158,27 @@ namespace AddAllFuel
             /// </remarks>
             /// <param name="__instance">インスタンス</param>
             /// <param name="inventory">インベントリ</param>
+            /// <param name="isAddOne">一つだけ投入するか</param>
             /// <returns></returns>
-            private static ItemDrop.ItemData FindCookableItem(Smelter __instance, Inventory inventory)
+            private static ItemDrop.ItemData FindCookableItem(Smelter __instance, Inventory inventory, bool isAddOne)
             {
-                // 除外されている燃料以外のアイテム取得
-                IEnumerable<string> names = __instance.m_conversion.
-                    Where(n => !ExcludeNames.Contains(n.m_from.m_itemData.m_shared.m_name)).
-                    Select(n => n.m_from.m_itemData.m_shared.m_name);
+                IEnumerable<string> names = null;
+                if (IsAllowAddOneExcludeItem.Value && isAddOne)
+                {
+                    // 除外を考慮せず取得
+                    names = __instance.m_conversion.Select(n => n.m_from.m_itemData.m_shared.m_name);
+                }
+                else
+                {
+                    // 除外されている燃料以外を取得
+                    names = __instance.m_conversion.
+                        Where(n => !ExcludeNames.Contains(n.m_from.m_itemData.m_shared.m_name)).
+                        Select(n => n.m_from.m_itemData.m_shared.m_name);
+                }
+
+                if (names == null)
+                    return null;
+
                 foreach (string name in names)
                 {
                     ItemDrop.ItemData item = inventory.GetItem(name);
