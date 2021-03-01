@@ -13,9 +13,9 @@ namespace AddAllFuel
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
     public class BepInExPlugin : BaseUnityPlugin
     {
-        public const string PluginGuid = "rin_jugatla.AddAllFuel";
-        public const string PluginName = "AddAllFuel";
-        public const string PluginVersion = "1.3.0";
+        private const string PluginGuid = "rin_jugatla.AddAllFuel";
+        private const string PluginName = "AddAllFuel";
+        private const string PluginVersion = "1.3.0";
         /// <summary>
         /// デバッグが有効か
         /// </summary>
@@ -27,18 +27,18 @@ namespace AddAllFuel
         /// <summary>
         /// MODが有効か
         /// </summary>
-        public static ConfigEntry<bool> IsEnabled;
+        private static ConfigEntry<bool> IsEnabled;
         /// <summary>
         /// 自動アップデート用のNexusID
         /// </summary>
         /// <remarks>
         /// https://www.nexusmods.com/valheim/mods/102
         /// </remarks>
-        public static ConfigEntry<int> NexusID;
+        private static ConfigEntry<int> NexusID;
         /// <summary>
         /// 一括投入時の修飾キー
         /// </summary>
-        public static ConfigEntry<string> ModifierKey;
+        private static ConfigEntry<string> ModifierKey;
         /// <summary>
         /// 自動投入修飾キーを反転するか
         /// </summary>
@@ -46,18 +46,18 @@ namespace AddAllFuel
         /// def -> false: Eで1つずつ投入、 ModifierKey + Eで一括投入
         /// true: Eで一括投入、　ModifierKey + Eで1つずつ投入
         /// </remarks>
-        public static ConfigEntry<bool> IsReverseModifierMode;
+        private static ConfigEntry<bool> IsReverseModifierMode;
         /// <summary>
         /// 一括投入に使用しない木材、鉱石名
         /// </summary>
         /// <remarks>
         /// $item_wood, $item_finewood, $item_roundlog
         /// </remarks>
-        public static IReadOnlyList<string> ExcludeNames;
+        private static IReadOnlyList<string> ExcludeNames;
         /// <summary>
         /// 一括投入しない場合に除外アイテムの使用を許可するか
         /// </summary>
-        public static ConfigEntry<bool> IsAllowAddOneExcludeItem;
+        private static ConfigEntry<bool> IsAllowAddOneExcludeItem;
 
         private void Awake()
         {
@@ -77,7 +77,7 @@ namespace AddAllFuel
 
         // 炭焼き窯、溶解炉
         [HarmonyPatch(typeof(Smelter), "OnAddOre")]
-        public static class ModifySmelterOnAddOre
+        private static class ModifySmelterOnAddOre
         {
             private static bool Prefix(Smelter __instance, ref Humanoid user, ref bool __result)
             {
@@ -191,7 +191,7 @@ namespace AddAllFuel
 
         // 溶解炉燃料追加
         [HarmonyPatch(typeof(Smelter), "OnAddFuel")]
-        public static class ModifySmelterOnAddFuel
+        private static class ModifySmelterOnAddFuel
         {
             private static void Postfix(Smelter __instance, ref bool __result, ref Humanoid user)
             {
