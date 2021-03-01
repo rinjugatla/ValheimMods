@@ -67,7 +67,7 @@ namespace SaveCommand
 				SaveIntervalMinutes.Value = 3;
 #endif
 
-            if (!IsEnabled.Value)
+			if (!IsEnabled.Value)
 				return;
 
 			Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
@@ -78,47 +78,47 @@ namespace SaveCommand
 		/// ホットキー処理
 		/// </summary>
 		private void Update()
-        {
-			if(Input.GetKeyUp(SaveHotKey.Value))
-            {
+		{
+			if (Input.GetKeyUp(SaveHotKey.Value))
+			{
 				Utility.Save();
-            }
-        }
+			}
+		}
 
 		[HarmonyPatch(typeof(Humanoid), "Awake")]
 		private static class ModifyHumanoidAwake
-        {
+		{
 			private static void Postfix(Humanoid __instance)
-            {
+			{
 				HumanoidInstance = __instance;
 			}
-        }
+		}
 
 		/// <summary>
 		/// チャット処理
 		/// </summary>
 		[HarmonyPatch(typeof(Chat), "InputText")]
 		private static class ModifyChatInputText
-        {
+		{
 			private static bool Prefix(Chat __instance)
-            {
+			{
 				if (IsDebug)
 					Debug.Log("InputText");
 
 				string text = __instance.m_input.text;
 				string lower = text.ToLower();
-				if(lower == "/save")
-                {
+				if (lower == "/save")
+				{
 					Utility.Save();
 					return false;
-                }
+				}
 
 				return true;
 			}
-        }
+		}
 
 		private static class Utility
-        {
+		{
 			/// <summary>
 			/// ワールドデータ、プレイヤーデータをセーブ
 			/// </summary>
@@ -138,7 +138,7 @@ namespace SaveCommand
 				}
 
 				if (ZNet.instance.IsSaving())
-                {
+				{
 					HumanoidInstance.Message(MessageHud.MessageType.Center,
 						$"The save process is already in progress.", 0, null);
 					return;
@@ -148,9 +148,9 @@ namespace SaveCommand
 				Game.instance.GetPlayerProfile().Save();
 				PrevSaveTime = DateTime.Now;
 
-				HumanoidInstance.Message(MessageHud.MessageType.Center,$"The save process is complete.", 0, null);
+				HumanoidInstance.Message(MessageHud.MessageType.Center, $"The save process is complete.", 0, null);
 				return;
 			}
-        }
+		}
 	}
 }
