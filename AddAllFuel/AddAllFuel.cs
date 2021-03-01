@@ -65,7 +65,7 @@ namespace AddAllFuel
             NexusID = Config.Bind<int>("General", "NexusID", 107, "Nexus mod ID for updates");
             ModifierKey = Config.Bind<string>("General", "ModifierKey", "left shift", "Modifier keys for using mods");
             IsReverseModifierMode = Config.Bind<bool>("General", "IsReverseModifierMode", false, "false: Batch submit with ModifierKey + UseKey. true: Batch submit with UseKey.");
-            ExcludeNames = Config.Bind<string>("General", "ExcludeNames", "", 
+            ExcludeNames = Config.Bind<string>("General", "ExcludeNames", "",
                 "Name of item not to be used as fuel/ore. Setting example: $item_finewood,$item_roundlog").Value.Replace(" ", "").Split(',').ToList();
             IsAllowAddOneExcludeItem = Config.Bind<bool>("General", "AllowAddOneExcludeItem", true, "Allow the addition of excluded items if you don't want to do batch processing?");
 
@@ -93,12 +93,12 @@ namespace AddAllFuel
                 #region 既存メソッドの処理
                 // インベントリからアイテムを取得
                 ItemDrop.ItemData item = FindCookableItem(__instance, user.GetInventory(), isAddOne);
-                if(item == null)
+                if (item == null)
                 {
                     user.Message(MessageHud.MessageType.Center, "$msg_noprocessableitems", 0, null);
                     return false;
                 }
-                
+
                 // アイテムの追加が許可されているか
                 if (!Traverse.Create(__instance).Method("IsItemAllowed", item.m_dropPrefab.name).GetValue<bool>())
                 {
@@ -119,7 +119,7 @@ namespace AddAllFuel
 
                 user.Message(MessageHud.MessageType.Center, "$msg_added " + item.m_shared.m_name, 0, null);
                 #endregion
-                
+
                 // 投入数
                 int queueSize = 1;
                 if (!isAddOne)
@@ -227,7 +227,7 @@ namespace AddAllFuel
                 // 残り投入数
                 int fuelLeft = (int)((float)(__instance.m_maxFuel) - fuelNow);
                 int fuelSize = Math.Min(item.m_stack, fuelLeft);
-                if(IsDebug)
+                if (IsDebug)
                 {
                     Debug.Log($"{item.m_shared.m_name}({item.m_stack})");
                     Debug.Log($"{fuelNow} / {__instance.m_maxFuel}");
@@ -239,6 +239,51 @@ namespace AddAllFuel
                 ZNetView m_nview = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>();
                 for (int i = 0; i < fuelSize; i++)
                     m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
+            }
+        }
+
+        /// <summary>
+        /// 焚火、トーチ
+        /// </summary>
+        [HarmonyPatch(typeof(Fireplace), "Interact")]
+        private static class ModifyFireplaceInteract
+        {
+            private static void Postfix(Fireplace __instance, Humanoid user, bool __result, ZNetView ___m_nview)
+            {
+                if (!__result)
+                    return;
+
+                if (Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
+                    !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value)
+                    return;
+
+                // 燃料が最大の場合
+                float fuelNow = (float)Mathf.CeilToInt(___m_nview.GetZDO().GetFloat("fuel", 0f));
+                if (fuelNow > __instance.m_maxFuel - 1)
+                    return;
+
+                Inventory inventory = user.GetInventory();
+                if (inventory == null)
+                    return;
+
+                // 燃料の所持なし
+                bool isHaveItem = inventory.HaveItem(__instance.m_fuelItem.m_itemData.m_shared.m_name);
+                if (!isHaveItem)
+                    return;
+
+                // アイテム取得
+                ItemDrop.ItemData item = inventory.GetItem(__instance.m_fuelItem.m_itemData.m_shared.m_name);
+                if (item == null)
+                    return;
+
+                // 残り投入数
+                int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
+                int fuelSize = Math.Min(item.m_stack, fuelLeft);
+
+                // 投入
+                inventory.RemoveItem(item, fuelSize);
+                for (int i = 0; i < fuelSize; i++)
+                    ___m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
             }
         }
     }
