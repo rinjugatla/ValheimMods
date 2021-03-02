@@ -121,7 +121,7 @@ namespace AddAllFuel
         [HarmonyPatch(typeof(Smelter), "OnAddOre")]
         private static class ModifySmelterOnAddOre
         {
-            private static bool Prefix(Smelter __instance, ref Humanoid user, ref bool __result)
+            private static bool Prefix(Smelter __instance, ref Humanoid user, ZNetView ___m_nview, ref bool __result)
             {
                 if (IsDebug)
                     Debug.Log("OnAddOre");
@@ -197,10 +197,10 @@ namespace AddAllFuel
                     container.GetInventory().RemoveItem(item, queueSize);
                     typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
                 }
-                ZNetView m_nview = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>();
+                
                 for (int i = 0; i < queueSize; i++)
                 {
-                    m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
+                    ___m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
                 }
 
                 // 後処理
