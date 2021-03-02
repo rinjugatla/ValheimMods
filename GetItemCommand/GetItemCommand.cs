@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace GetItemCommand
@@ -44,6 +45,10 @@ namespace GetItemCommand
         /// アイテムリスト
         /// </summary>
         private static IReadOnlyList<ItemDrop> ValidItemList;
+        /// <summary>
+        /// チャットインスタンス
+        /// </summary>
+        private static Chat ChatInstance;
 
         private void Awake()
         {
@@ -55,7 +60,7 @@ namespace GetItemCommand
             if (!IsEnabled.Value)
                 return;
 
-            if (AgreementKey.Value != "e198cb46-2e57-433f-921c-575fa044e421")
+            if (AgreementKey.Value != Utility.GetAgreementKey())
                 return;
 
             Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
@@ -70,6 +75,15 @@ namespace GetItemCommand
             }
         }
 
+        [HarmonyPatch(typeof(Chat), "Awake")]
+        private static class ModifyChatAwake
+        {
+            private static void Postfix(Chat __instance)
+            {
+                ChatInstance = __instance;
+            }
+        }
+
         [HarmonyPatch(typeof(Chat), "InputText")]
         private static class ModifyChatInputText
         {
@@ -80,15 +94,12 @@ namespace GetItemCommand
             /// <returns></returns>
             private static bool Prefix(Chat __instance)
             {
-                if (IsDebug)
-                    Debug.Log("InputText");
-
                 string text = __instance.m_input.text;
                 string lower = text.ToLower();
                 if (lower == "/getitem" || lower == "/gi")
                 {
-                    Utility.PostText(__instance, "/getitem [name] - You get the maximum number of items.");
-                    Utility.PostText(__instance, "/getitem [name] [int] - You get [int] number of items.");
+                    Utility.PostChatMyself("/getitem [name] - You get the maximum number of items.");
+                    Utility.PostChatMyself("/getitem [name] [int] - You get [int] number of items.");
                     return false;
                 }
                 else if(lower.StartsWith("/getitem ") || lower.StartsWith("/gi "))
@@ -115,7 +126,7 @@ namespace GetItemCommand
                 string[] array = text.Split(' ');
                 if (array.Length == 1)
                 {
-                    Utility.PostText(__instance, "Parameters are missing.");
+                    Utility.PostChatMyself("Parameters are missing.");
                     return false;
                 }
 
@@ -125,14 +136,14 @@ namespace GetItemCommand
                 if (array.Length > 2)
                     if (!uint.TryParse(array[2], out number))
                     {
-                        Utility.PostText(__instance, "Enter the number of items as a positive integer.");
+                        Utility.PostChatMyself("Enter the number of items as a positive integer.");
                         return false;
                     }
 
                 var item = ValidItemList.Where(n => n.name == name).FirstOrDefault();
                 if(item == null)
                 {
-                    Utility.PostText(__instance, $"An unknown item name({name}) was entered.");
+                    Utility.PostChatMyself($"An unknown item name({name}) was entered.");
                     return false;
                 }
 
@@ -154,7 +165,7 @@ namespace GetItemCommand
                 string username = profile.GetName();
                 long userid = profile.GetPlayerID();
                 string message = $"created item({name}) * {giveNumber} with {PluginName}.";
-                Utility.PostText(__instance, $"I {message}");
+                Utility.PostChatShout($"I {message}");
                 ZLog.Log($"{username}({userid}) {message}");
 
                 return false;
@@ -189,7 +200,7 @@ namespace GetItemCommand
                 }
                 catch (Exception ex)
                 {
-                    Utility.PostText(__instance, ex.Message);
+                    Utility.PostChatMyself(ex.Message);
                 }
 
                 return false;
@@ -198,6 +209,45 @@ namespace GetItemCommand
 
         internal static class Utility
         {
+            /// <summary>
+            /// 認証キーを取得
+            /// </summary>
+            /// <returns></returns>
+            public static string GetAgreementKey()
+            {
+                WebClient client = new WebClient();
+                string source = null;
+                try
+                {
+                    client.Encoding = Encoding.UTF8;
+                    source = client.DownloadString(new Uri("https://www.nexusmods.com/valheim/mods/148"));
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log($"{PluginName}: Error {ex.Message}");
+                    return null;
+                }
+                
+                string[] lines = source.Split(
+                    new[] { "\r\n", "\r", "\n" },
+                    StringSplitOptions.None
+                );
+
+                foreach (var line in lines)
+                {
+                    Match match = Regex.Match(line, "Change \"AgreementKey\" to \"([\\d\\D]+)\"\\.");
+                    if (!match.Success)
+                        continue;
+
+                    string key = match.Groups[1].Value;
+                    if(IsDebug)
+                        Debug.Log($"{PluginName}: Key {match.Value} -> {key}");
+                    return key;
+                }
+
+                return null;
+            }
+
             /// <summary>
             /// アイテムリスト取得
             /// </summary>
@@ -215,18 +265,28 @@ namespace GetItemCommand
             }
 
             /// <summary>
+            /// 自分にだけ見えるチャットを表示
+            /// </summary>
+            /// <param name="text"></param>
+            public static void PostChatMyself(string text)
+            {
+                if (text == null)
+                    return;
+
+                Traverse.Create(ChatInstance).Method("AddString", new object[] { text }).GetValue();
+            }
+
+            /// <summary>
             /// チャットにテキストを送信
             /// </summary>
             /// <param name="__instance"></param>
             /// <param name="text">送信文字列</param>
-            public static void PostText(Chat __instance, string text)
+            public static void PostChatShout(string text)
             {
                 if (text == null)
                     return;
-                if (IsDebug)
-                    Debug.Log(text);
 
-                __instance.SendText(Talker.Type.Whisper, text);
+                ChatInstance.SendText(Talker.Type.Shout, text);
             }
         }
     }
