@@ -40,6 +40,10 @@ namespace GetItemCommand
         /// https://www.nexusmods.com/valheim/mods/102
         /// </remarks>
         public static ConfigEntry<int> NexusID;
+        /// <summary>
+        /// アイテムリスト
+        /// </summary>
+        private static IReadOnlyList<ItemDrop> ValidItemList;
 
         private void Awake()
         {
@@ -55,6 +59,15 @@ namespace GetItemCommand
                 return;
 
             Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
+        }
+
+        [HarmonyPatch(typeof(ObjectDB), "Awake")]
+        private static class ModifyObjectDBAwake
+        {
+            private static void Postfix(ObjectDB __instance)
+            {
+                ValidItemList = Utility.GetValidItemData();
+            }
         }
 
         [HarmonyPatch(typeof(Chat), "InputText")]
@@ -116,47 +129,31 @@ namespace GetItemCommand
                         return false;
                     }
 
-                // アイテム情報取得
-                GameObject itemPrefab = ObjectDB.instance.GetItemPrefab(name);
-                if (!itemPrefab)
+                var item = ValidItemList.Where(n => n.name == name).FirstOrDefault();
+                if(item == null)
                 {
                     Utility.PostText(__instance, $"An unknown item name({name}) was entered.");
-                    return false;
-                }
-
-                // アイテムのポップ位置設定
-                GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(itemPrefab);
-                if (gameObject == null)
-                {
-                    Utility.PostText(__instance, $"Failed to create the ItemObject({name}).");
-                    return false;
-                }
-
-                ItemDrop drop = gameObject.GetComponent<ItemDrop>();
-                if (drop == null || drop.m_itemData.m_shared.m_icons.Length == 0)
-                {
-                    Utility.PostText(__instance, $"Failed to create the ItemDrop({name}).");
                     return false;
                 }
 
                 // スタックを最大数または指定数に変更
                 int giveNumber = 0;
                 if (number == 0)
-                    giveNumber = drop.m_itemData.m_shared.m_maxStackSize;
+                    giveNumber = item.m_itemData.m_shared.m_maxStackSize;
                 else
                     giveNumber = Math.Min(
-                        drop.m_itemData.m_shared.m_maxStackSize,
+                        item.m_itemData.m_shared.m_maxStackSize,
                         (int)number);
 
                 // アイテムを付与
-                Player.m_localPlayer.GetInventory().AddItem(name, giveNumber, drop.m_itemData.m_quality, drop.m_itemData.m_variant, 
+                Player.m_localPlayer.GetInventory().AddItem(name, giveNumber, item.m_itemData.m_quality, item.m_itemData.m_variant, 
                     Player.m_localPlayer.GetPlayerID(), Player.m_localPlayer.GetPlayerName());
+                
+                // ログ
                 PlayerProfile profile = Game.instance.GetPlayerProfile();
                 string username = profile.GetName();
                 long userid = profile.GetPlayerID();
                 string message = $"created item({name}) * {giveNumber} with {PluginName}.";
-
-                // 記録
                 Utility.PostText(__instance, $"I {message}");
                 ZLog.Log($"{username}({userid}) {message}");
 
@@ -201,6 +198,22 @@ namespace GetItemCommand
 
         internal static class Utility
         {
+            /// <summary>
+            /// アイテムリスト取得
+            /// </summary>
+            /// <returns></returns>
+            public static List<ItemDrop> GetValidItemData()
+            {
+                var result = new List<ItemDrop>();
+                foreach (ItemDrop.ItemData.ItemType type in Enum.GetValues(typeof(ItemDrop.ItemData.ItemType)))
+                {
+                    List<ItemDrop> drops = ObjectDB.instance.GetAllItems(type, "");;
+                    result.AddRange(drops.Where(n => n.m_itemData.m_shared.m_icons.Length != 0));
+                }
+
+                return result;
+            }
+
             /// <summary>
             /// チャットにテキストを送信
             /// </summary>
