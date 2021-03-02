@@ -97,8 +97,10 @@ namespace AddAllFuel
         {
             private static void Postfix(Container __instance)
             {
-                if (__instance.name.StartsWith("piece_chest") || __instance.name.StartsWith("Container") && __instance.GetInventory() != null)
+                if ((__instance.name.StartsWith("piece_chest") || __instance.name.StartsWith("Container")) && __instance.GetInventory() != null)
                     Containers.Add(__instance);
+                if (IsDebug)
+                    Debug.Log(Containers.Count);
             }
         }
 
@@ -132,10 +134,27 @@ namespace AddAllFuel
                 #region 既存メソッドの処理
                 // インベントリからアイテムを取得
                 ItemDrop.ItemData item = FindCookableItem(__instance, user.GetInventory(), isAddOne);
+                Container container = null;
                 if (item == null)
                 {
-                    user.Message(MessageHud.MessageType.Center, "$msg_noprocessableitems", 0, null);
-                    return false;
+                    // コンテナから取得
+                    if(IsUseFromContainer.Value)
+                    {
+                        List<Container> containers = Utility.GetNearByContainer(user.transform.position);
+                        foreach (var c in containers ?? new List<Container>())
+                        {
+                            container = c;
+                            item = FindCookableItem(__instance, c.GetInventory(), isAddOne);
+                            if (item != null)
+                                break;
+                        }
+                    }
+                    // インベントリ、コンテナともに見つからない場合
+                    if (item == null)
+                    {
+                        user.Message(MessageHud.MessageType.Center, "$msg_noprocessableitems", 0, null);
+                        return false;
+                    }
                 }
 
                 // アイテムの追加が許可されているか
@@ -175,7 +194,10 @@ namespace AddAllFuel
                 }
 
                 // 投入
-                user.GetInventory().RemoveItem(item, queueSize);
+                if (container == null)
+                    user.GetInventory().RemoveItem(item, queueSize);
+                else
+                    container.GetInventory().RemoveItem(item, queueSize);
                 ZNetView m_nview = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>();
                 for (int i = 0; i < queueSize; i++)
                 {
@@ -220,7 +242,7 @@ namespace AddAllFuel
 
                 foreach (string name in names)
                 {
-                    ItemDrop.ItemData item = inventory.GetItem(name);
+                    ItemDrop.ItemData item = inventory?.GetItem(name);
                     if (item != null)
                         return item;
                 }
@@ -329,17 +351,26 @@ namespace AddAllFuel
         private static class Utility
         {
             /// <summary>
-            /// コンテナリストから探索範囲内で最も近いコンテナを取得
+            /// 探索範囲内のコンテナを取得
             /// </summary>
             /// <param name="center">探索中心点</param>
             /// <returns></returns>
-            public static Container GetNearestContainer(Vector3 center)
+            public static List<Container> GetNearByContainer(Vector3 center)
             {
                 float sqrRange = UseFromContainerRange.Value * UseFromContainerRange.Value;
-                Container container = Containers.
-                    Where(n => (n.transform.position - center).sqrMagnitude < sqrRange).
-                    OrderByDescending(m => m.transform.position - center).First();
-                return container;
+                List<Container> containers = Containers.Where(n => 
+                    n != null && n.transform != null && n.GetInventory() != null &&
+                    (n.transform.position - center).sqrMagnitude < sqrRange &&
+                    Traverse.Create(n).Method("CheckAccess", new object[] { Player.m_localPlayer.GetPlayerID() }).GetValue<bool>())?.ToList();
+
+                if (containers == null || containers.Count() == 0)
+                {
+                    Debug.Log("近くに有効なチェストなし");
+                    return null;
+                }
+                
+                Debug.Log(string.Join("\n", containers.Select(n => n.transform.position)));
+                return containers;
             }
         }
     }
