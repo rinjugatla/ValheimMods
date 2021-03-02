@@ -121,9 +121,6 @@ namespace AddAllFuel
         {
             private static bool Prefix(Smelter __instance, ref Humanoid user, ZNetView ___m_nview, ref bool __result)
             {
-                if (IsDebug)
-                    Debug.Log("OnAddOre");
-
                 __result = false;
 
                 // アイテムの追加方法
@@ -418,7 +415,6 @@ namespace AddAllFuel
                 if (containers == null || containers.Count() == 0)
                     return null;
                 
-                Debug.Log(string.Join("\n", containers.Select(n => n.transform.position)));
                 return containers;
             }
         }
