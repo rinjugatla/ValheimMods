@@ -364,10 +364,7 @@ namespace AddAllFuel
                     Traverse.Create(n).Method("CheckAccess", new object[] { Player.m_localPlayer.GetPlayerID() }).GetValue<bool>())?.ToList();
 
                 if (containers == null || containers.Count() == 0)
-                {
-                    Debug.Log("近くに有効なチェストなし");
                     return null;
-                }
                 
                 Debug.Log(string.Join("\n", containers.Select(n => n.transform.position)));
                 return containers;
