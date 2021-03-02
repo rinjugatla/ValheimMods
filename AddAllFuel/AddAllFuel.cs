@@ -173,12 +173,10 @@ namespace AddAllFuel
                 user.Message(MessageHud.MessageType.Center, "$msg_added " + item.m_shared.m_name, 0, null);
 
                 // 投入数
+                int queueSizeLeft = __instance.m_maxOre - queueSizeNow;
                 int queueSize = 1;
                 if (!isAddOne)
-                {
-                    int queueSizeLeft = __instance.m_maxOre - queueSizeNow;
                     queueSize = Math.Min(item.m_stack, queueSizeLeft);
-                }
 
                 if (IsDebug)
                 {
@@ -197,9 +195,7 @@ namespace AddAllFuel
                 }
                 
                 for (int i = 0; i < queueSize; i++)
-                {
                     ___m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
-                }
 
                 // 後処理
                 __result = true;
@@ -251,40 +247,62 @@ namespace AddAllFuel
         [HarmonyPatch(typeof(Smelter), "OnAddFuel")]
         private static class ModifySmelterOnAddFuel
         {
-            private static void Postfix(Smelter __instance, ref bool __result, ref Humanoid user)
+            private static bool Prefix(Smelter __instance, Humanoid user, ItemDrop.ItemData item, ZNetView ___m_nview, ref bool __result)
             {
-                if (IsDebug)
+                __result = false;
+
+                string fuelName = __instance.m_fuelItem.m_itemData.m_shared.m_name;
+
+                if(item != null && item.m_shared.m_name != fuelName)
                 {
-                    Debug.Log("OnAddFuel");
-                    Debug.Log(__instance.m_fuelItem.m_itemData.m_shared.m_name);
+                    user.Message(MessageHud.MessageType.Center, "$msg_wrongitem", 0, null);
+                    return false;
                 }
 
-                if (Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
-                    !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value)
-                    return;
-
-                // 処理なし
-                // 既存メソッドで燃料補充されていない場合
-                if (!__result)
-                    return;
                 // 燃料が最大の場合
                 float fuelNow = Traverse.Create(__instance).Method("GetFuel").GetValue<float>();
                 if (fuelNow > __instance.m_maxFuel - 1)
-                    return;
+                {
+                    user.Message(MessageHud.MessageType.Center, "$msg_itsfull", 0, null);
+                    return false;
+                }
 
-                Inventory inventory = user.GetInventory();
-                // 燃料の所持なし
-                bool isHaveItem = inventory.HaveItem(__instance.m_fuelItem.m_itemData.m_shared.m_name);
-                if (!isHaveItem)
-                    return;
-                // アイテム取得
-                ItemDrop.ItemData item = inventory.GetItem(__instance.m_fuelItem.m_itemData.m_shared.m_name);
+                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
+                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
+
+                // インベントリからアイテムを取得
+                item = user.GetInventory().GetItem(fuelName);
+                Container container = null;
                 if (item == null)
-                    return;
+                {
+                    // コンテナから取得
+                    if (IsUseFromContainer.Value)
+                    {
+                        List<Container> containers = Utility.GetNearByContainer(user.transform.position);
+                        foreach (var c in containers ?? new List<Container>())
+                        {
+                            container = c;
+                            item = c.GetInventory().GetItem(fuelName);
+                            if (item != null)
+                                break;
+                        }
+                    }
+                    // インベントリ、コンテナともに見つからない場合
+                    if (item == null)
+                    {
+                        user.Message(MessageHud.MessageType.Center, $"$msg_donthaveany {fuelName}", 0, null);
+                        return false;
+                    }
+                }
+
+                user.Message(MessageHud.MessageType.Center, $"$msg_added {fuelName}", 0, null);
 
                 // 残り投入数
-                int fuelLeft = (int)((float)(__instance.m_maxFuel) - fuelNow);
-                int fuelSize = Math.Min(item.m_stack, fuelLeft);
+                int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
+                int fuelSize = 1;
+                if(!isAddOne)
+                    fuelSize = Math.Min(item.m_stack, fuelLeft);
+
                 if (IsDebug)
                 {
                     Debug.Log($"{item.m_shared.m_name}({item.m_stack})");
@@ -293,10 +311,18 @@ namespace AddAllFuel
                 }
 
                 // 投入
-                inventory.RemoveItem(item, fuelSize);
-                ZNetView m_nview = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>();
+                if (container == null)
+                    user.GetInventory().RemoveItem(item, fuelSize);
+                else
+                {
+                    container.GetInventory().RemoveItem(item, fuelSize);
+                    typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
+                }
                 for (int i = 0; i < fuelSize; i++)
-                    m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
+                    ___m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
+
+                __result = true;
+                return false;
             }
         }
 
