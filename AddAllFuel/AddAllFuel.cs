@@ -4,6 +4,7 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -197,7 +198,10 @@ namespace AddAllFuel
                 if (container == null)
                     user.GetInventory().RemoveItem(item, queueSize);
                 else
+                {
                     container.GetInventory().RemoveItem(item, queueSize);
+                    typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
+                }
                 ZNetView m_nview = Traverse.Create(__instance).Field("m_nview").GetValue<ZNetView>();
                 for (int i = 0; i < queueSize; i++)
                 {
