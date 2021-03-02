@@ -133,7 +133,7 @@ namespace AddAllFuel
                 if (item == null)
                 {
                     // コンテナから取得
-                    if(IsUseFromContainer.Value)
+                    if (IsUseFromContainer.Value)
                     {
                         List<Container> containers = Utility.GetNearByContainer(user.transform.position);
                         foreach (var c in containers ?? new List<Container>())
@@ -190,7 +190,7 @@ namespace AddAllFuel
                     container.GetInventory().RemoveItem(item, queueSize);
                     typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
                 }
-                
+
                 for (int i = 0; i < queueSize; i++)
                     ___m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
 
@@ -250,7 +250,7 @@ namespace AddAllFuel
 
                 string fuelName = __instance.m_fuelItem.m_itemData.m_shared.m_name;
 
-                if(item != null && item.m_shared.m_name != fuelName)
+                if (item != null && item.m_shared.m_name != fuelName)
                 {
                     user.Message(MessageHud.MessageType.Center, "$msg_wrongitem", 0, null);
                     return false;
@@ -297,7 +297,7 @@ namespace AddAllFuel
                 // 残り投入数
                 int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
                 int fuelSize = 1;
-                if(!isAddOne)
+                if (!isAddOne)
                     fuelSize = Math.Min(item.m_stack, fuelLeft);
 
                 if (IsDebug)
@@ -378,7 +378,7 @@ namespace AddAllFuel
                 // 残り投入数
                 int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
                 int fuelSize = 1;
-                if(!isAddOne)
+                if (!isAddOne)
                     fuelSize = Math.Min(item.m_stack, fuelLeft);
 
                 // 投入
@@ -407,14 +407,14 @@ namespace AddAllFuel
             public static List<Container> GetNearByContainer(Vector3 center)
             {
                 float sqrRange = UseFromContainerRange.Value * UseFromContainerRange.Value;
-                List<Container> containers = Containers.Where(n => 
+                List<Container> containers = Containers.Where(n =>
                     n != null && n.transform != null && n.GetInventory() != null &&
                     (n.transform.position - center).sqrMagnitude < sqrRange &&
                     Traverse.Create(n).Method("CheckAccess", new object[] { Player.m_localPlayer.GetPlayerID() }).GetValue<bool>())?.ToList();
 
                 if (containers == null || containers.Count() == 0)
                     return null;
-                
+
                 return containers;
             }
         }
