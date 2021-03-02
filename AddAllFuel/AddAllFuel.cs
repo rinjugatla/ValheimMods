@@ -132,7 +132,6 @@ namespace AddAllFuel
                 bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
                                 !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
 
-                #region 既存メソッドの処理
                 // インベントリからアイテムを取得
                 ItemDrop.ItemData item = FindCookableItem(__instance, user.GetInventory(), isAddOne);
                 Container container = null;
@@ -165,9 +164,6 @@ namespace AddAllFuel
                     return false;
                 }
 
-                // 追加するアイテム名
-                ZLog.Log("trying to add " + item.m_shared.m_name);
-
                 // 現在の投入数
                 int queueSizeNow = Traverse.Create(__instance).Method("GetQueueSize").GetValue<int>();
                 if (queueSizeNow >= __instance.m_maxOre)
@@ -177,7 +173,6 @@ namespace AddAllFuel
                 }
 
                 user.Message(MessageHud.MessageType.Center, "$msg_added " + item.m_shared.m_name, 0, null);
-                #endregion
 
                 // 投入数
                 int queueSize = 1;
