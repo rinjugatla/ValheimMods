@@ -100,8 +100,6 @@ namespace AddAllFuel
             {
                 if ((__instance.name.StartsWith("piece_chest") || __instance.name.StartsWith("Container")) && __instance.GetInventory() != null)
                     Containers.Add(__instance);
-                if (IsDebug)
-                    Debug.Log(Containers.Count);
             }
         }
 
