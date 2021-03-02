@@ -332,42 +332,71 @@ namespace AddAllFuel
         [HarmonyPatch(typeof(Fireplace), "Interact")]
         private static class ModifyFireplaceInteract
         {
-            private static void Postfix(Fireplace __instance, Humanoid user, bool __result, ZNetView ___m_nview)
+            private static bool Prefix(Fireplace __instance, Humanoid user, bool hold, ZNetView ___m_nview, ref bool __result)
             {
-                if (!__result)
-                    return;
+                __result = false;
 
-                if (Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
-                    !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value)
-                    return;
+                if (hold)
+                    return false;
+
+                if (!___m_nview.HasOwner())
+                    ___m_nview.ClaimOwnership();
+
+                string fuelName = __instance.m_fuelItem.m_itemData.m_shared.m_name;
 
                 // 燃料が最大の場合
                 float fuelNow = (float)Mathf.CeilToInt(___m_nview.GetZDO().GetFloat("fuel", 0f));
                 if (fuelNow > __instance.m_maxFuel - 1)
-                    return;
+                {
+                    user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$msg_cantaddmore", new string[]
+                        {fuelName}), 0, null);
+                    return false;
+                }
 
-                Inventory inventory = user.GetInventory();
-                if (inventory == null)
-                    return;
-
-                // 燃料の所持なし
-                bool isHaveItem = inventory.HaveItem(__instance.m_fuelItem.m_itemData.m_shared.m_name);
-                if (!isHaveItem)
-                    return;
-
-                // アイテム取得
-                ItemDrop.ItemData item = inventory.GetItem(__instance.m_fuelItem.m_itemData.m_shared.m_name);
+                ItemDrop.ItemData item = user.GetInventory()?.GetItem(fuelName);
+                Container container = null;
                 if (item == null)
-                    return;
+                {
+                    if (IsUseFromContainer.Value)
+                    {
+                        List<Container> containers = Utility.GetNearByContainer(user.transform.position);
+                        container = containers.Where(n => n.GetInventory()?.GetItem(fuelName) != null).First();
+                        item = container?.GetInventory().GetItem(fuelName);
+                    }
+
+                    // インベントリ、コンテナに燃料がない場合
+                    if (item == null)
+                    {
+                        user.Message(MessageHud.MessageType.Center, $"$msg_outof {fuelName}", 0, null);
+                        return false;
+                    }
+                }
+
+                user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$msg_fireadding", new string[]
+                    {fuelName}), 0, null);
+
+                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
+                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
 
                 // 残り投入数
                 int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
-                int fuelSize = Math.Min(item.m_stack, fuelLeft);
+                int fuelSize = 1;
+                if(!isAddOne)
+                    fuelSize = Math.Min(item.m_stack, fuelLeft);
 
                 // 投入
-                inventory.RemoveItem(item, fuelSize);
+                if (container == null)
+                    user.GetInventory().RemoveItem(item, fuelSize);
+                else
+                {
+                    container.GetInventory().RemoveItem(item, fuelSize);
+                    typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
+                }
                 for (int i = 0; i < fuelSize; i++)
                     ___m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
+
+                __result = true;
+                return false;
             }
         }
 
