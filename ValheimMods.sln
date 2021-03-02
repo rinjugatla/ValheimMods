@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoItemCollectContainer", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SaveCommand", "SaveCommand\SaveCommand.csproj", "{EA3E644D-7EAB-4082-9A56-EFDE0736095B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerStats", "PlayerStats\PlayerStats.csproj", "{51377A7C-F07C-4420-812F-19B0696AE4FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{EA3E644D-7EAB-4082-9A56-EFDE0736095B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA3E644D-7EAB-4082-9A56-EFDE0736095B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA3E644D-7EAB-4082-9A56-EFDE0736095B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51377A7C-F07C-4420-812F-19B0696AE4FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51377A7C-F07C-4420-812F-19B0696AE4FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51377A7C-F07C-4420-812F-19B0696AE4FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51377A7C-F07C-4420-812F-19B0696AE4FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
