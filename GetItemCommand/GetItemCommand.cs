@@ -17,7 +17,7 @@ namespace GetItemCommand
     {
         public const string PluginGuid = "rin_jugatla.GetItemCommand";
         public const string PluginName = "GetItemCommand";
-        public const string PluginVersion = "1.1.2";
+        public const string PluginVersion = "1.1.3";
         /// <summary>
         /// デバッグが有効か
         /// </summary>
