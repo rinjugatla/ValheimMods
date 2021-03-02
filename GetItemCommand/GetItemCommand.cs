@@ -60,7 +60,11 @@ namespace GetItemCommand
             if (!IsEnabled.Value)
                 return;
 
-            if (AgreementKey.Value != Utility.GetAgreementKey())
+            string key = Utility.GetAgreementKey();
+            if (key == null)
+                return;
+
+            if (AgreementKey.Value != key)
                 return;
 
             Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
