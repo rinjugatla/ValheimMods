@@ -267,9 +267,6 @@ namespace AddAllFuel
                     return false;
                 }
 
-                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
-                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
-
                 // インベントリからアイテムを取得
                 item = user.GetInventory().GetItem(fuelName);
                 Container container = null;
@@ -296,6 +293,9 @@ namespace AddAllFuel
                 }
 
                 user.Message(MessageHud.MessageType.Center, $"$msg_added {fuelName}", 0, null);
+
+                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
+                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
 
                 // 残り投入数
                 int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
