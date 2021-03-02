@@ -58,6 +58,18 @@ namespace AddAllFuel
         /// 一括投入しない場合に除外アイテムの使用を許可するか
         /// </summary>
         private static ConfigEntry<bool> IsAllowAddOneExcludeItem;
+        /// <summary>
+        /// コンテナからのアイテムを補充するか
+        /// </summary>
+        private static ConfigEntry<bool> IsUseFromContainer;
+        /// <summary>
+        /// コンテナから使用する場合の範囲
+        /// </summary>
+        private static ConfigEntry<float> UseFromContainerRange;
+        /// <summary>
+		/// コンテナ
+		/// </summary>
+		private static List<Container> Containers = new List<Container>();
 
         private void Awake()
         {
@@ -68,11 +80,38 @@ namespace AddAllFuel
             ExcludeNames = Config.Bind<string>("General", "ExcludeNames", "",
                 "Name of item not to be used as fuel/ore. Setting example: $item_finewood,$item_roundlog").Value.Replace(" ", "").Split(',').ToList();
             IsAllowAddOneExcludeItem = Config.Bind<bool>("General", "AllowAddOneExcludeItem", true, "Allow the addition of excluded items if you don't want to do batch processing?");
+            IsUseFromContainer = Config.Bind<bool>("General", "UseFromContainer", false, "If you don't have enough items on hand, you can replenish them from containers.");
+            UseFromContainerRange = Config.Bind<float>("General", "UseFromContainerRange", 5f, "Search range when replenishing items from containers.");
 
             if (!IsEnabled.Value)
                 return;
 
             Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
+        }
+
+        /// <summary>
+		/// コンテナリスト取得
+		/// </summary>
+		[HarmonyPatch(typeof(Container), "Awake")]
+        public static class ModifyContainerAwake
+        {
+            private static void Postfix(Container __instance)
+            {
+                if (__instance.name.StartsWith("piece_chest") || __instance.name.StartsWith("Container") && __instance.GetInventory() != null)
+                    Containers.Add(__instance);
+            }
+        }
+
+        /// <summary>
+        /// コンテナリストから破棄コンテナを削除
+        /// </summary>
+        [HarmonyPatch(typeof(Container), "OnDestroyed")]
+        public static class ModifyContainerOnDestroyed
+        {
+            private static void Prefix(Container __instance)
+            {
+                Containers.Remove(__instance);
+            }
         }
 
         // 炭焼き窯、溶解炉
@@ -284,6 +323,23 @@ namespace AddAllFuel
                 inventory.RemoveItem(item, fuelSize);
                 for (int i = 0; i < fuelSize; i++)
                     ___m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
+            }
+        }
+
+        private static class Utility
+        {
+            /// <summary>
+            /// コンテナリストから探索範囲内で最も近いコンテナを取得
+            /// </summary>
+            /// <param name="center">探索中心点</param>
+            /// <returns></returns>
+            public static Container GetNearestContainer(Vector3 center)
+            {
+                float sqrRange = UseFromContainerRange.Value * UseFromContainerRange.Value;
+                Container container = Containers.
+                    Where(n => (n.transform.position - center).sqrMagnitude < sqrRange).
+                    OrderByDescending(m => m.transform.position - center).First();
+                return container;
             }
         }
     }
