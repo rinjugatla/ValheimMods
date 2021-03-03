@@ -147,8 +147,16 @@ namespace AddAllFuel
                     // インベントリ、コンテナともに見つからない場合
                     if (item == null)
                     {
-                        user.Message(MessageHud.MessageType.Center, "$msg_noprocessableitems", 0, null);
-                        return false;
+                        if (isAddOne)
+                        {
+                            // 一括投入しない場合は他のMODの処理に任せる
+                            return true;
+                        }
+                        else
+                        {
+                            user.Message(MessageHud.MessageType.Center, "$msg_noprocessableitems", 0, null);
+                            return false;
+                        }
                     }
                 }
 
@@ -264,6 +272,9 @@ namespace AddAllFuel
                     return false;
                 }
 
+                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
+                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
+
                 // インベントリからアイテムを取得
                 item = user.GetInventory().GetItem(fuelName);
                 Container container = null;
@@ -284,15 +295,20 @@ namespace AddAllFuel
                     // インベントリ、コンテナともに見つからない場合
                     if (item == null)
                     {
-                        user.Message(MessageHud.MessageType.Center, $"$msg_donthaveany {fuelName}", 0, null);
-                        return false;
+                        if (isAddOne)
+                        {
+                            // 一括投入しない場合は他のMODの処理に任せる
+                            return true;
+                        }
+                        else
+                        {
+                            user.Message(MessageHud.MessageType.Center, $"$msg_donthaveany {fuelName}", 0, null);
+                            return false;
+                        }
                     }
                 }
 
                 user.Message(MessageHud.MessageType.Center, $"$msg_added {fuelName}", 0, null);
-
-                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
-                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
 
                 // 残り投入数
                 int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
@@ -350,6 +366,9 @@ namespace AddAllFuel
                     return false;
                 }
 
+                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
+                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
+
                 ItemDrop.ItemData item = user.GetInventory()?.GetItem(fuelName);
                 Container container = null;
                 if (item == null)
@@ -364,16 +383,21 @@ namespace AddAllFuel
                     // インベントリ、コンテナに燃料がない場合
                     if (item == null)
                     {
-                        user.Message(MessageHud.MessageType.Center, $"$msg_outof {fuelName}", 0, null);
-                        return false;
+                        if (isAddOne)
+                        {
+                            // 一括投入しない場合は他のMODの処理に任せる
+                            return true;
+                        }
+                        else
+                        {
+                            user.Message(MessageHud.MessageType.Center, $"$msg_outof {fuelName}", 0, null);
+                            return false;
+                        }
                     }
                 }
 
                 user.Message(MessageHud.MessageType.Center, Localization.instance.Localize("$msg_fireadding", new string[]
                     {fuelName}), 0, null);
-
-                bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
-                               !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
 
                 // 残り投入数
                 int fuelLeft = (int)(__instance.m_maxFuel - fuelNow);
