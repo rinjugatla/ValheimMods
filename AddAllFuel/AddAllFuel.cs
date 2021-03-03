@@ -124,6 +124,14 @@ namespace AddAllFuel
             {
                 __result = false;
 
+                // 現在の投入数
+                int queueSizeNow = Traverse.Create(__instance).Method("GetQueueSize").GetValue<int>();
+                if (queueSizeNow >= __instance.m_maxOre)
+                {
+                    user.Message(MessageHud.MessageType.Center, "$msg_itsfull", 0, null);
+                    return false;
+                }
+
                 // アイテムの追加方法
                 bool isAddOne = Input.GetKey(ModifierKey.Value) && IsReverseModifierMode.Value ||
                                 !Input.GetKey(ModifierKey.Value) && !IsReverseModifierMode.Value;
@@ -165,14 +173,6 @@ namespace AddAllFuel
                 if (!Traverse.Create(__instance).Method("IsItemAllowed", item.m_dropPrefab.name).GetValue<bool>())
                 {
                     user.Message(MessageHud.MessageType.Center, "$msg_wontwork", 0, null);
-                    return false;
-                }
-
-                // 現在の投入数
-                int queueSizeNow = Traverse.Create(__instance).Method("GetQueueSize").GetValue<int>();
-                if (queueSizeNow >= __instance.m_maxOre)
-                {
-                    user.Message(MessageHud.MessageType.Center, "$msg_itsfull", 0, null);
                     return false;
                 }
 
