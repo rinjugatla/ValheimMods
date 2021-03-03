@@ -117,6 +117,7 @@ namespace AddAllFuel
 
         // 炭焼き窯、溶解炉
         [HarmonyPatch(typeof(Smelter), "OnAddOre")]
+        [HarmonyPriority(Priority.High)]
         private static class ModifySmelterOnAddOre
         {
             private static bool Prefix(Smelter __instance, ref Humanoid user, ZNetView ___m_nview, ref bool __result)
@@ -250,6 +251,7 @@ namespace AddAllFuel
 
         // 溶解炉燃料追加
         [HarmonyPatch(typeof(Smelter), "OnAddFuel")]
+        [HarmonyPriority(Priority.High)]
         private static class ModifySmelterOnAddFuel
         {
             private static bool Prefix(Smelter __instance, Humanoid user, ItemDrop.ItemData item, ZNetView ___m_nview, ref bool __result)
@@ -343,6 +345,7 @@ namespace AddAllFuel
         /// 焚火、トーチ
         /// </summary>
         [HarmonyPatch(typeof(Fireplace), "Interact")]
+        [HarmonyPriority(Priority.High)]
         private static class ModifyFireplaceInteract
         {
             private static bool Prefix(Fireplace __instance, Humanoid user, bool hold, ZNetView ___m_nview, ref bool __result)
