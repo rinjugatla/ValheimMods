@@ -16,7 +16,7 @@ namespace SaveCommand
 	{
 		private const string PluginGuid = "rin_jugatla.SaveCommand";
 		private const string PluginName = "SaveCommand";
-		private const string PluginVersion = "1.1.0";
+		private const string PluginVersion = "1.2.0";
 		/// <summary>
 		/// デバッグが有効か
 		/// </summary>
