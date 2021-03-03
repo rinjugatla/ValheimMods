@@ -19,7 +19,7 @@
   * If you do it again, 20 of them will be consumed.
   * If the fuel limit is less than the stack, only that amount will be consumed.
 
-### Conflict
+## Conflict
 
 * ~~I have tried to avoid conflicts with the Craft Build Smelt Cook Fuel From Containers mod as much as possible, but there may be more conflicts due to feature changes.~~
 * ~~The ability to refill items from containers in the "Craft Build Smelt Cook Fuel From Containers" mod has been disabled in versions 1.3.0 and later, except for the input of charcoal.~~
