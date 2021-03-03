@@ -6,10 +6,23 @@
 * When using the facility normally (default: E), fuel is fed one by one.
 * When using the facility, pressing the modifier key (default: Left Shift) will load the fuel, etc. in batches.
 
+## Description
+
+* If there is no fuel in the player's inventory, fuel can be injected in batches from containers.
+* If you want to use this feature, you need to change the settings.
+
+* If a player's inventory and containers do not reveal a valid item when in individual item mode (default E), the other mods will continue to process the item.
+* Note that in batch mode (default: Shift Left + E), other mods will not continue to process if an item is not found.
+
+* The unit of batch injection is done per stack.
+  * For example, if you have wood (10/50) and wood (20/50) in your inventory, 10 of them will be consumed from your inventory.
+  * If you do it again, 20 of them will be consumed.
+  * If the fuel limit is less than the stack, only that amount will be consumed.
+
 ### Conflict
 
-* I have tried to avoid conflicts with the Craft Build Smelt Cook Fuel From Containers mod as much as possible, but there may be more conflicts due to feature changes.
-* The ability to refill items from containers in the "Craft Build Smelt Cook Fuel From Containers" mod has been disabled in versions 1.3.0 and later, except for the input of charcoal.
+* ~~I have tried to avoid conflicts with the Craft Build Smelt Cook Fuel From Containers mod as much as possible, but there may be more conflicts due to feature changes.~~
+* ~~The ability to refill items from containers in the "Craft Build Smelt Cook Fuel From Containers" mod has been disabled in versions 1.3.0 and later, except for the input of charcoal.~~
 
 ## Setting
 
@@ -32,6 +45,11 @@
 6. AllowAddOneExcludeItem
    * true: Exclude items from the list if they are submitted individually.
    * false: Do not allow items to be submitted regardless of whether they are submitted individually or in batches
+7. UseFromContainer
+   * true: If there is no fuel in the player's inventory, it will be replenished from a nearby container.
+   * false: We will not replenish from the container.
+8. UseFromContainerRange
+   * The distance from the player to the container when refilling from the container.
 
 ## Supported Facilities
 
@@ -44,6 +62,16 @@
 7. Various torches
 
 ## Changelog
+
+### 1.5.1
+
+* Fixed a conflict with the "Craft Build Smelt Cook Fuel From Containers" mod!
+* If a player's inventory and containers do not reveal a valid item when in individual item mode (default E), the other mods will continue to process the item.
+* Note that in batch mode (default: Shift Left + E), other mods will not continue to process if an item is not found.
+
+### 1.5.0
+
+* Batch loading of fuel from containers is now supported.
 
 ### 1.4.0
 
