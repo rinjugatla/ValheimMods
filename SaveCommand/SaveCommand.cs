@@ -45,9 +45,9 @@ namespace SaveCommand
 		/// </summary>
 		private static ConfigEntry<int> SaveIntervalMinutes;
 		/// <summary>
-		/// 保持するバックアップ数
+		/// 保持するプレイヤーバックアップ数
 		/// </summary>
-		private static ConfigEntry<int> MaxSaveBackupFile;
+		private static ConfigEntry<int> MaxPlayerSaveBackupCount;
 		/// <summary>
 		/// 前回のセーブ時間
 		/// </summary>
@@ -63,8 +63,21 @@ namespace SaveCommand
 			NexusID = Config.Bind<int>("General", "NexusID", 190, "Nexus mod ID for updates.");
 			SaveHotKey = Config.Bind<string>("General", "SaveHotKey", "p", "Save hot key.");
 			SaveIntervalMinutes = Config.Bind<int>("General", "SaveIntervalMinutes", 3, "Save interval.");
-			MaxSaveBackupFile = Config.Bind<int>("General", "MaxSaveBackupFile", 3, "Maximum number of backup files to keep.");
+			MaxPlayerSaveBackupCount = Config.Bind<int>("General", "MaxPlayerSaveBackupCount", 3, "Maximum number of player backup files to keep.");
 
+			ValidateSetting();
+
+			if (!IsEnabled.Value)
+				return;
+
+			Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
+		}
+
+		/// <summary>
+		/// 設定の検証
+		/// </summary>
+		private void ValidateSetting()
+        {
 			if (SaveHotKey.Value == "")
 				SaveHotKey.Value = "p";
 
@@ -73,15 +86,9 @@ namespace SaveCommand
 				SaveIntervalMinutes.Value = 3;
 #endif
 
-			if (MaxSaveBackupFile.Value < 0)
-				MaxSaveBackupFile.Value = 1;
-
-			if (!IsEnabled.Value)
-				return;
-
-			Harmony.CreateAndPatchAll(System.Reflection.Assembly.GetExecutingAssembly());
+			if (MaxPlayerSaveBackupCount.Value < 0)
+				MaxPlayerSaveBackupCount.Value = 1;
 		}
-
 
 		/// <summary>
 		/// ホットキー処理
@@ -153,10 +160,10 @@ namespace SaveCommand
 				File.Copy(old, bak);
 
 				IReadOnlyList<FileInfo> files = new DirectoryInfo(path).GetFiles($"{filename}_*.fch.bak").OrderByDescending(n => n.LastWriteTime).ToList();
-				if(files.Count() > MaxSaveBackupFile.Value)
+				if(files.Count() > MaxPlayerSaveBackupCount.Value)
                 {
 					ZLog.Log("Deleteing backups...");
-                    for (int i = MaxSaveBackupFile.Value; i < files.Count(); i++)
+                    for (int i = MaxPlayerSaveBackupCount.Value; i < files.Count(); i++)
                     {
 						ZLog.Log($"Deleting: {files[i]}");
 						File.Delete(files[i].FullName);
@@ -165,7 +172,7 @@ namespace SaveCommand
                 }
 				else
                 {
-					ZLog.Log($"Less than {MaxSaveBackupFile.Value} backup yet...");
+					ZLog.Log($"Less than {MaxPlayerSaveBackupCount.Value} backup yet...");
 				}
 				ZLog.Log("SavePlayerToDisk Done.");
 			}
