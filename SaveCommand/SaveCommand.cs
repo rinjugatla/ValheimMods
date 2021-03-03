@@ -127,9 +127,6 @@ namespace SaveCommand
 		{
 			private static bool Prefix(Chat __instance)
 			{
-				if (IsDebug)
-					Debug.Log("InputText");
-
 				string text = __instance.m_input.text;
 				string lower = text.ToLower();
 				if (lower == "/save")
