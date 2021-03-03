@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,6 +45,10 @@ namespace SaveCommand
 		/// </summary>
 		private static ConfigEntry<int> SaveIntervalMinutes;
 		/// <summary>
+		/// 保持するバックアップ数
+		/// </summary>
+		private static ConfigEntry<int> MaxSaveBackupFile;
+		/// <summary>
 		/// 前回のセーブ時間
 		/// </summary>
 		private static DateTime PrevSaveTime = DateTime.Now;
@@ -58,6 +63,7 @@ namespace SaveCommand
 			NexusID = Config.Bind<int>("General", "NexusID", 190, "Nexus mod ID for updates.");
 			SaveHotKey = Config.Bind<string>("General", "SaveHotKey", "p", "Save hot key.");
 			SaveIntervalMinutes = Config.Bind<int>("General", "SaveIntervalMinutes", 3, "Save interval.");
+			MaxSaveBackupFile = Config.Bind<int>("General", "MaxSaveBackupFile", 3, "Maximum number of backup files to keep.");
 
 			if (SaveHotKey.Value == "")
 				SaveHotKey.Value = "p";
@@ -66,6 +72,9 @@ namespace SaveCommand
 			if (SaveIntervalMinutes.Value < 3)
 				SaveIntervalMinutes.Value = 3;
 #endif
+
+			if (MaxSaveBackupFile.Value < 0)
+				MaxSaveBackupFile.Value = 1;
 
 			if (!IsEnabled.Value)
 				return;
@@ -118,6 +127,42 @@ namespace SaveCommand
 				return true;
 			}
 		}
+
+		/// <summary>
+		/// プレイヤーデータバックアップを設定数保持
+		/// </summary>
+		[HarmonyPatch(typeof(PlayerProfile), "SavePlayerToDisk")]
+		private static class ModifyPlayerPlofile
+        {
+			private static void Postfix(PlayerProfile __instance)
+            {
+				string path = Utils.GetSaveDataPath() + "/characters";
+				Directory.CreateDirectory(path);
+				string filename = __instance.GetFilename();
+				string now = $"{path}/{filename}.fch";
+				string old = $"{path}/{filename}.fch.old";
+
+				string bak = $"{path}/{filename}_{DateTime.Now:yyyyMMdd_hhmmss}.fch.bak";
+				File.Copy(old, bak);
+
+				IReadOnlyList<FileInfo> files = new DirectoryInfo(path).GetFiles($"{filename}_*.fch.bak").OrderByDescending(n => n.LastWriteTime).ToList();
+				if(files.Count() > MaxSaveBackupFile.Value)
+                {
+					ZLog.Log("Deleteing backups...");
+                    for (int i = MaxSaveBackupFile.Value; i < files.Count(); i++)
+                    {
+						ZLog.Log($"Deleting: {files[i]}");
+						File.Delete(files[i].FullName);
+                    }
+					return;
+                }
+				else
+                {
+					ZLog.Log($"Less than {MaxSaveBackupFile.Value} backup yet...");
+				}
+				ZLog.Log("SavePlayerToDisk Done.");
+			}
+        }
 
 		private static class Utility
 		{
