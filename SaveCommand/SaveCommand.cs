@@ -90,9 +90,16 @@ namespace SaveCommand
 		{
 			if (Input.GetKeyUp(SaveHotKey.Value))
 			{
+				// トップメニューの場合は処理しない
+				if (Player.m_localPlayer == null)
+					return;
+				// チャット、コンソール入力時は処理しない
 				bool isShowChat = Chat.instance.HasFocus();
-				if(!isShowChat)
-					Utility.Save();
+				bool isShowConsole = Console.IsVisible();
+				if (isShowChat || isShowConsole)
+					return;
+
+				Utility.Save();
 			}
 		}
 
@@ -171,10 +178,6 @@ namespace SaveCommand
 			/// </summary>
 			public static void Save()
 			{
-				// トップメニューの場合は処理しない
-				if (Player.m_localPlayer == null)
-					return;
-
 				int elapsedTime = (int)(DateTime.Now - PrevSaveTime).TotalMinutes;
 				int leftTime = SaveIntervalMinutes.Value - elapsedTime;
 				if (leftTime > 0)
