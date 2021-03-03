@@ -81,7 +81,9 @@ namespace SaveCommand
 		{
 			if (Input.GetKeyUp(SaveHotKey.Value))
 			{
-				Utility.Save();
+				bool isShowChat = Chat.instance.HasFocus();
+				if(!isShowChat)
+					Utility.Save();
 			}
 		}
 
