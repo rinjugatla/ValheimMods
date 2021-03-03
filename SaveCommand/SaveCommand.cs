@@ -156,20 +156,23 @@ namespace SaveCommand
 				string bak = $"{path}/{filename}_{DateTime.Now:yyyyMMdd_hhmmss}.fch.bak";
 				File.Copy(old, bak);
 
-				IReadOnlyList<FileInfo> files = new DirectoryInfo(path).GetFiles($"{filename}_*.fch.bak").OrderByDescending(n => n.LastWriteTime).ToList();
-				if(files.Count() > MaxPlayerSaveBackupCount.Value)
+				if(MaxPlayerSaveBackupCount.Value < 0)
                 {
-					ZLog.Log("Deleteing backups...");
-                    for (int i = MaxPlayerSaveBackupCount.Value; i < files.Count(); i++)
-                    {
-						ZLog.Log($"Deleting: {files[i]}");
-						File.Delete(files[i].FullName);
-                    }
-					return;
-                }
-				else
-                {
-					ZLog.Log($"Less than {MaxPlayerSaveBackupCount.Value} backup yet...");
+					IReadOnlyList<FileInfo> files = new DirectoryInfo(path).GetFiles($"{filename}_*.fch.bak").OrderByDescending(n => n.LastWriteTime).ToList();
+					if (files.Count() > MaxPlayerSaveBackupCount.Value)
+					{
+						ZLog.Log("Deleteing backups...");
+						for (int i = MaxPlayerSaveBackupCount.Value; i < files.Count(); i++)
+						{
+							ZLog.Log($"Deleting: {files[i]}");
+							File.Delete(files[i].FullName);
+						}
+						return;
+					}
+					else
+					{
+						ZLog.Log($"Less than {MaxPlayerSaveBackupCount.Value} backup yet...");
+					}
 				}
 				ZLog.Log("SavePlayerToDisk Done.");
 			}
