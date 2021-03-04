@@ -113,6 +113,8 @@ namespace GetItemCommand
                     Utility.PostChatMyself("/getitem [name] [x] [y] - Equipment of quality x and pattern y is acquired.");
 
                     Utility.PostChatMyself("/getitemlist - Output the item list file.");
+
+                    Utility.PostChatMyself("/getitemsearch [str] - Search for items containing \"str\".");
                     return false;
                 }
                 else if(lower.StartsWith("/getitem ") || lower.StartsWith("/gi "))
