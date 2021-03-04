@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using static ItemDrop.ItemData;
 
 namespace GetItemCommand
 {
@@ -102,8 +103,16 @@ namespace GetItemCommand
                 string lower = text.ToLower();
                 if (lower == "/getitem" || lower == "/gi")
                 {
+                    Utility.PostChatMyself("Non-equipment");
                     Utility.PostChatMyself("/getitem [name] - You get the maximum number of items.");
-                    Utility.PostChatMyself("/getitem [name] [int] - You get [int] number of items.");
+                    Utility.PostChatMyself("/getitem [name] [x] - You get [x] number of items.");
+
+                    Utility.PostChatMyself("Equipment");
+                    Utility.PostChatMyself("/getitem [name] - Gain equipment of quality 1.");
+                    Utility.PostChatMyself("/getitem [name] [x] - Gain equipment of quality x.");
+                    Utility.PostChatMyself("/getitem [name] [x] [y] - Equipment of quality x and pattern y is acquired.");
+
+                    Utility.PostChatMyself("/getitemlist - Output the item list file.");
                     return false;
                 }
                 else if(lower.StartsWith("/getitem ") || lower.StartsWith("/gi "))
@@ -128,26 +137,9 @@ namespace GetItemCommand
             {
                 // パラメータ取得
                 string[] array = text.Split(' ');
-                if (array.Length == 1)
-                {
-                    Utility.PostChatMyself("Parameters are missing.");
-                    return false;
-                }
 
-                // アイテム名と数を取得
+                // アイテム名取得
                 string name = array[1];
-                uint number = 0;
-                if (array.Length > 2)
-                    if (!uint.TryParse(array[2], out number))
-                    {
-                        Utility.PostChatMyself("Enter the number of items as a positive integer.");
-                        return false;
-                    }
-                // アイテム品質(初期値は1)
-                uint quality = 1;
-                if (array.Length > 3)
-                    uint.TryParse(array[3], out quality);
-
                 var item = ValidItemList.Where(n => n.name == name).FirstOrDefault();
                 if (item == null)
                 {
@@ -155,41 +147,116 @@ namespace GetItemCommand
                     return false;
                 }
 
-                // スタックを最大数または指定数に変更
-                int giveNumber = 0;
-                if (number == 0)
-                    giveNumber = item.m_itemData.m_shared.m_maxStackSize;
+                // アイテムの種類によって引数の扱いを変える
+                ItemDrop.ItemData.ItemType type = item.m_itemData.m_shared.m_itemType;
+                bool isEquipment = IsEquipment(type);
+                uint quality = 1;
+                uint variant = 0;
+                uint stack = 0;
+                
+                if (isEquipment)
+                {
+                    // 品質
+                    if (array.Length >= 3 && !uint.TryParse(array[2], out quality))
+                    {
+                        Utility.PostChatMyself("The quality should be specified as an integer.");
+                        return false;
+                    }
+                    // 模様
+                    if (array.Length >= 4 && !uint.TryParse(array[3], out variant))
+                    {
+                        Utility.PostChatMyself("The pattern should be specified as an integer.");
+                        return false;
+                    }
+                }
                 else
-                    giveNumber = Math.Min(
-                        item.m_itemData.m_shared.m_maxStackSize,
-                        (int)number);
+                {
+                    // 数量
+                    if (array.Length >= 3 && !uint.TryParse(array[2], out stack))
+                    {
+                        Utility.PostChatMyself("Enter the number of items as a positive integer.");
+                        return false;
+                    }
+                }
 
-                // アイテムレベル補正
-                int giveQuality = 1;
-                if (quality != 1)
-                    giveQuality = Math.Min(
+                // 品質補正
+                int getQuality = Math.Min(
                         item.m_itemData.m_shared.m_maxQuality,
                         (int)quality);
 
+                // 模様補正 存在しない場合は初期値を使用
+                int getVariant = (int)variant;
+                if (variant >= item.m_itemData.m_shared.m_icons.Length)
+                    getVariant = 0;
+
+                // スタックを最大数または指定数に変更
+                int getStack = 0;
+                if (stack == 0)
+                    getStack = item.m_itemData.m_shared.m_maxStackSize;
+                else
+                    getStack = Math.Min(
+                        item.m_itemData.m_shared.m_maxStackSize,
+                        (int)stack);
+
                 if(IsDebug)
-                    Debug.Log($"{name} " +
-                        $"max_stack: {item.m_itemData.m_shared.m_maxStackSize} " +
-                        $"max_quality: {item.m_itemData.m_shared.m_maxQuality} " +
-                        $"variants {item.m_itemData.m_shared.m_variants}");
+                    Debug.Log($"{name}\n" +
+                        $"max_stack: {item.m_itemData.m_shared.m_maxStackSize}\n" +
+                        $"max_quality: {item.m_itemData.m_shared.m_maxQuality}\n" +
+                        $"variants {item.m_itemData.m_shared.m_variants}\n" +
+                        $"icon {item.m_itemData.m_shared.m_icons.Length}\n" +
+                        $"getStask: {getStack}\n" +
+                        $"getQuality: {getQuality}\n" +
+                        $"getVariant: {getVariant}");
 
                 // アイテムを付与
-                Player.m_localPlayer.GetInventory().AddItem(name, giveNumber, giveQuality, item.m_itemData.m_variant,
+                Player.m_localPlayer.GetInventory().AddItem(name, getStack, getQuality, getVariant,
                     Player.m_localPlayer.GetPlayerID(), Player.m_localPlayer.GetPlayerName());
 
                 // ログ
                 PlayerProfile profile = Game.instance.GetPlayerProfile();
                 string username = profile.GetName();
                 long userid = profile.GetPlayerID();
-                string message = $"created item({name}) * {giveNumber} with {PluginName}.";
+                string message = $"created item({name}) * {getStack} with {PluginName}.";
                 Utility.PostChatShout($"I {message}");
                 ZLog.Log($"{username}({userid}) {message}");
 
                 return false;
+            }
+
+            /// <summary>
+            /// アイテムタイプが装備種か
+            /// </summary>
+            /// <param name="type">アイテムタイプ</param>
+            /// <returns></returns>
+            private static bool IsEquipment(ItemType type)
+            {
+                switch (type)
+                {
+                    case ItemType.Material:
+                    case ItemType.Ammo:
+                    case ItemType.Trophie:
+                    case ItemType.Misc:
+                        return false;
+                    case ItemType.OneHandedWeapon:
+                    case ItemType.TwoHandedWeapon:
+                    case ItemType.Bow:
+                    case ItemType.Shield:
+                    case ItemType.Legs:
+                    case ItemType.Hands:
+                    case ItemType.Helmet:
+                    case ItemType.Shoulder:
+                    case ItemType.Chest:
+                    case ItemType.Tool:
+                    case ItemType.Utility:
+                    case ItemType.Torch:
+                        return true;
+                    case ItemType.None:
+                    case ItemType.Customization:
+                    case ItemType.Consumable:
+                    case ItemType.Attach_Atgeir:
+                    default:
+                        return false;
+                }
             }
 
             /// <summary>
