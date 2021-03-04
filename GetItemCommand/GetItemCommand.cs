@@ -123,6 +123,8 @@ namespace GetItemCommand
                     return ExportItemList(__instance);
                 }
 
+                if (lower.StartsWith("/getitemsearch ") || lower.StartsWith("/gis "))
+                    return SearchItem(text);
 
                 return true;
             }
@@ -291,6 +293,25 @@ namespace GetItemCommand
                     Utility.PostChatMyself(ex.Message);
                 }
 
+                return false;
+            }
+
+            /// <summary>
+            /// 指定の文字列が含まれるアイテム名を検索
+            /// </summary>
+            /// <returns></returns>
+            private static bool SearchItem(string text)
+            {
+                // パラメータ取得
+                string[] array = text.Split(' ');
+
+                // アイテム名取得
+                string name = array[1];
+                var names = ValidItemList.Where(n => n.name.IndexOf(name, StringComparison.OrdinalIgnoreCase) > -1).Select(n => n.name).Take(8);
+                if (names == null)
+                    Utility.PostChatMyself($"Item not found.");
+                else
+                    Utility.PostChatMyself($"The following items were found.\n {string.Join("\n ", names)}");
                 return false;
             }
         }
