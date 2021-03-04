@@ -143,9 +143,13 @@ namespace GetItemCommand
                         Utility.PostChatMyself("Enter the number of items as a positive integer.");
                         return false;
                     }
+                // アイテム品質(初期値は1)
+                uint quality = 1;
+                if (array.Length > 3)
+                    uint.TryParse(array[3], out quality);
 
                 var item = ValidItemList.Where(n => n.name == name).FirstOrDefault();
-                if(item == null)
+                if (item == null)
                 {
                     Utility.PostChatMyself($"An unknown item name({name}) was entered.");
                     return false;
@@ -160,10 +164,23 @@ namespace GetItemCommand
                         item.m_itemData.m_shared.m_maxStackSize,
                         (int)number);
 
+                // アイテムレベル補正
+                int giveQuality = 1;
+                if (quality != 1)
+                    giveQuality = Math.Min(
+                        item.m_itemData.m_shared.m_maxQuality,
+                        (int)quality);
+
+                if(IsDebug)
+                    Debug.Log($"{name} " +
+                        $"max_stack: {item.m_itemData.m_shared.m_maxStackSize} " +
+                        $"max_quality: {item.m_itemData.m_shared.m_maxQuality} " +
+                        $"variants {item.m_itemData.m_shared.m_variants}");
+
                 // アイテムを付与
-                Player.m_localPlayer.GetInventory().AddItem(name, giveNumber, item.m_itemData.m_quality, item.m_itemData.m_variant, 
+                Player.m_localPlayer.GetInventory().AddItem(name, giveNumber, giveQuality, item.m_itemData.m_variant,
                     Player.m_localPlayer.GetPlayerID(), Player.m_localPlayer.GetPlayerName());
-                
+
                 // ログ
                 PlayerProfile profile = Game.instance.GetPlayerProfile();
                 string username = profile.GetName();
@@ -261,7 +278,7 @@ namespace GetItemCommand
                 var result = new List<ItemDrop>();
                 foreach (ItemDrop.ItemData.ItemType type in Enum.GetValues(typeof(ItemDrop.ItemData.ItemType)))
                 {
-                    List<ItemDrop> drops = ObjectDB.instance.GetAllItems(type, "");;
+                    List<ItemDrop> drops = ObjectDB.instance.GetAllItems(type, "");
                     result.AddRange(drops.Where(n => n.m_itemData.m_shared.m_icons.Length != 0));
                 }
 
