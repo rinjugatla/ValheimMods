@@ -156,7 +156,7 @@ namespace SaveCommand
 				string bak = $"{path}/{filename}_{DateTime.Now:yyyyMMdd_hhmmss}.fch.bak";
 				File.Copy(old, bak);
 
-				if(MaxPlayerSaveBackupCount.Value < 0)
+				if(MaxPlayerSaveBackupCount.Value > -1)
                 {
 					IReadOnlyList<FileInfo> files = new DirectoryInfo(path).GetFiles($"{filename}_*.fch.bak").OrderByDescending(n => n.LastWriteTime).ToList();
 					if (files.Count() > MaxPlayerSaveBackupCount.Value)
