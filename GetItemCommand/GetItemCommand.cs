@@ -104,17 +104,16 @@ namespace GetItemCommand
                 if (lower == "/getitem" || lower == "/gi")
                 {
                     Utility.PostChatMyself("Non-equipment");
-                    Utility.PostChatMyself("/getitem [name] - You get the maximum number of items.");
-                    Utility.PostChatMyself("/getitem [name] [x] - You get [x] number of items.");
+                    Utility.PostChatMyself(" /getitem [name] - You get the maximum number of items.");
+                    Utility.PostChatMyself(" /getitem [name] [x] - You get [x] number of items.");
 
                     Utility.PostChatMyself("Equipment");
-                    Utility.PostChatMyself("/getitem [name] - Gain equipment of quality 1.");
-                    Utility.PostChatMyself("/getitem [name] [x] - Gain equipment of quality x.");
-                    Utility.PostChatMyself("/getitem [name] [x] [y] - Equipment of quality x and pattern y is acquired.");
-
-                    Utility.PostChatMyself("/getitemlist - Output the item list file.");
-
-                    Utility.PostChatMyself("/getitemsearch [str] - Search for items containing \"str\".");
+                    Utility.PostChatMyself(" /getitem [name] - Gain equipment of quality 1.");
+                    Utility.PostChatMyself(" /getitem [name] [x] - Gain equipment of quality x.");
+                    Utility.PostChatMyself(" /getitem [name] [x] [y] - Equipment of quality x and pattern y is acquired.");
+                    Utility.PostChatMyself("Other");
+                    Utility.PostChatMyself(" /getitemlist - Output the item list file.");
+                    Utility.PostChatMyself(" /getitemsearch [str] - Search for items containing \"str\".");
                     return false;
                 }
                 else if(lower.StartsWith("/getitem ") || lower.StartsWith("/gi "))
