@@ -286,13 +286,8 @@ namespace AddAllFuel
                     if (IsUseFromContainer.Value)
                     {
                         List<Container> containers = Utility.GetNearByContainer(user.transform.position);
-                        foreach (var c in containers ?? new List<Container>())
-                        {
-                            container = c;
-                            item = c.GetInventory().GetItem(fuelName);
-                            if (item != null)
-                                break;
-                        }
+                        container = containers?.Where(n => n.GetInventory()?.GetItem(fuelName) != null).FirstOrDefault();
+                        item = container?.GetInventory().GetItem(fuelName);
                     }
                     // インベントリ、コンテナともに見つからない場合
                     if (item == null)
@@ -379,7 +374,7 @@ namespace AddAllFuel
                     if (IsUseFromContainer.Value)
                     {
                         List<Container> containers = Utility.GetNearByContainer(user.transform.position);
-                        container = containers.Where(n => n.GetInventory()?.GetItem(fuelName) != null).First();
+                        container = containers?.Where(n => n.GetInventory()?.GetItem(fuelName) != null)?.FirstOrDefault();
                         item = container?.GetInventory().GetItem(fuelName);
                     }
 
