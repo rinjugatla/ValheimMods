@@ -154,7 +154,8 @@ namespace SaveCommand
 				string old = $"{path}/{filename}.fch.old";
 
 				string bak = $"{path}/{filename}_{DateTime.Now:yyyyMMdd_hhmmss}.fch.bak";
-				File.Copy(old, bak);
+				if(File.Exists(old))
+					File.Copy(old, bak);
 
 				if(MaxPlayerSaveBackupCount.Value > -1)
                 {
