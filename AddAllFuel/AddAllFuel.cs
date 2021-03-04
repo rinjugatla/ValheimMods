@@ -200,8 +200,7 @@ namespace AddAllFuel
                     typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
                 }
 
-                for (int i = 0; i < queueSize; i++)
-                    ___m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
+                RPC_AddOre(__instance, ___m_nview, item.m_dropPrefab.name, queueSize);
 
                 // 後処理
                 __result = true;
@@ -246,6 +245,29 @@ namespace AddAllFuel
                         return item;
                 }
                 return null;
+            }
+
+            /// <summary>
+            /// 燃料/鉱石の投入を施設に反映
+            /// </summary>
+            /// <remarks>
+            /// 一括投入するとエフェクトで処理が重くなるので独自実装
+            /// </remarks>
+            /// <param name="m_nview"></param>
+            /// <param name="name">アイテム名</param>
+            /// <param name="count">投入数</param>
+            private static void RPC_AddOre(Smelter instance, ZNetView m_nview, string name, int count)
+            {
+                if (!m_nview.IsOwner())
+                    return;
+                if (!Traverse.Create(instance).Method("IsItemAllowed", name).GetValue<bool>())
+                    return;
+
+                int now = Traverse.Create(instance).Method("GetQueueSize").GetValue<int>();
+                m_nview.GetZDO().Set("item" + now, name);
+                m_nview.GetZDO().Set("queued", now + count);
+                instance.m_oreAddedEffects.Create(instance.transform.position, instance.transform.rotation, null, 1f);
+                ZLog.Log($"Added ore {name} * {count}");
             }
         }
 
