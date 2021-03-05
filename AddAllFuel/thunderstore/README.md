@@ -21,9 +21,6 @@
 
 ## Conflict
 
-* ~~I have tried to avoid conflicts with the Craft Build Smelt Cook Fuel From Containers mod as much as possible, but there may be more conflicts due to feature changes.~~
-* ~~The ability to refill items from containers in the "Craft Build Smelt Cook Fuel From Containers" mod has been disabled in versions 1.3.0 and later, except for the input of charcoal.~~
-
 ## Setting
 
 * The configuration file is "BepInEx/config/rin_jugatla.AddAllFuel.cfg".It will be created automatically when you start the game after installing the mod.
@@ -62,6 +59,11 @@
 7. Various torches
 
 ## Changelog
+
+### 1.6.0
+
+* Changed so that the effect is only displayed once when items are inserted in bulk.
+* Fixed a bug that caused an error when no storage is found nearby.
 
 ### 1.5.1
 
