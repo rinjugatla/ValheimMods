@@ -459,11 +459,36 @@ namespace AddAllFuel
                     container.GetInventory().RemoveItem(item, fuelSize);
                     typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
                 }
-                for (int i = 0; i < fuelSize; i++)
-                    ___m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
+
+                RPC_AddFuel(__instance, ___m_nview, fuelSize);
 
                 __result = true;
                 return false;
+            }
+
+            /// <summary>
+            /// 燃料の投入を施設に反映
+            /// </summary>
+            /// <remarks>
+            /// 一括投入するとエフェクトで処理が重くなるので独自実装
+            /// </remarks>
+            /// <param name="m_nview"></param>
+            /// <param name="name">アイテム名</param>
+            /// <param name="count">投入数</param>
+            private static void RPC_AddFuel(Fireplace instance, ZNetView m_nview, float count)
+            {
+                if (!m_nview.IsOwner())
+                    return;
+
+                // 端数切捨て
+                float now = m_nview.GetZDO().GetFloat("fuel", 0f);
+                float size = Mathf.Clamp(now + count, 0f, instance.m_maxFuel);
+                m_nview.GetZDO().Set("fuel", size);
+                instance.m_fuelAddedEffects.Create(
+                    instance.transform.position, instance.transform.rotation, null, 1f);
+                ZLog.Log($"Added fuel * {count}");
+
+                Traverse.Create(instance).Method("UpdateState").GetValue();
             }
         }
 
