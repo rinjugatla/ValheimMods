@@ -16,7 +16,7 @@ namespace AddAllFuel
     {
         private const string PluginGuid = "rin_jugatla.AddAllFuel";
         private const string PluginName = "AddAllFuel";
-        private const string PluginVersion = "1.5.1";
+        private const string PluginVersion = "1.6.1";
         /// <summary>
         /// デバッグが有効か
         /// </summary>
