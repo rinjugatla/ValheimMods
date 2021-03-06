@@ -200,7 +200,8 @@ namespace AddAllFuel
                     typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
                 }
 
-                RPC_AddOre(__instance, ___m_nview, item.m_dropPrefab.name, queueSize);
+                for (int i = 0; i < queueSize; i++)
+                    ___m_nview.InvokeRPC("AddOre", new object[] { item.m_dropPrefab.name });
 
                 // 後処理
                 __result = true;
@@ -356,7 +357,9 @@ namespace AddAllFuel
                     typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
                 }
 
-                RPC_AddFuel(__instance, ___m_nview, fuelSize);
+
+                for (int i = 0; i < fuelSize; i++)
+                    ___m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
 
                 __result = true;
                 return false;
@@ -460,7 +463,8 @@ namespace AddAllFuel
                     typeof(Container).GetMethod("Save", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(container, new object[] { });
                 }
 
-                RPC_AddFuel(__instance, ___m_nview, fuelSize);
+                for (int i = 0; i < fuelSize; i++)
+                    ___m_nview.InvokeRPC("AddFuel", Array.Empty<object>());
 
                 __result = true;
                 return false;
