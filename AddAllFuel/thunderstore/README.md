@@ -60,6 +60,12 @@
 
 ## Changelog
 
+### 1.6.1
+
+* This version may have a bug that causes items to be lost.
+* Rewind the effect processing when fueling, which was changed in version 1.6.0.
+* This may have caused items to be lost due to a lack of coordination with the server.
+
 ### 1.6.0
 
 * Changed so that the effect is only displayed once when items are inserted in bulk.
