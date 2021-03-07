@@ -33,15 +33,23 @@
   <ItemGroup>
     <Reference Include="0Harmony20">
       <HintPath>..\Lib\BepInEx\0Harmony20.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="assembly_guiutils">
+      <HintPath>..\Lib\Valheim\assembly_guiutils.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="assembly_utils">
       <HintPath>..\Lib\Valheim\assembly_utils.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="assembly_valheim">
       <HintPath>..\Lib\Valheim\assembly_valheim.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\Lib\BepInEx\BepInEx.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -53,9 +61,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\Lib\Unstripped\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\Lib\Unstripped\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
