@@ -60,12 +60,21 @@
 
 ## Changelog
 
-### 1.6.1
+### 1.6.2
+
+* There was an error in the changelog for version 1.6.1, which has been corrected.
+* There is no change in the program content.
 
 * Fixed a bug that caused items to be lost in version 1.6.0.
 * We believe that this bug was caused by the server not being able to send the correct commands when batch-loading items.
 * As a result of this fix, the effects of batch item submissions are now displayed multiple times.
-* If you are using version 1.6.0, please update to version 1.6.1.
+* If you are using version 1.6.0, please update to version 1.6.1 or 1.6.2 .
+
+### 1.6.1
+
+* This version may have a bug that causes items to be lost.
+* Rewind the effect processing when fueling, which was changed in version 1.6.0.
+* This may have caused items to be lost due to a lack of coordination with the server.
 
 ### 1.6.0
 
