@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerStats", "PlayerStats\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StorageSort", "StorageSort\StorageSort.csproj", "{F2195103-EF52-4E50-9387-4BCE34C400CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayerScale", "PlayerScale\PlayerScale.csproj", "{FFE8A4EF-728A-4201-97D1-81250ACE8189}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{F2195103-EF52-4E50-9387-4BCE34C400CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2195103-EF52-4E50-9387-4BCE34C400CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2195103-EF52-4E50-9387-4BCE34C400CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFE8A4EF-728A-4201-97D1-81250ACE8189}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFE8A4EF-728A-4201-97D1-81250ACE8189}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFE8A4EF-728A-4201-97D1-81250ACE8189}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFE8A4EF-728A-4201-97D1-81250ACE8189}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
