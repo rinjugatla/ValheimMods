@@ -35,6 +35,10 @@
       <HintPath>..\Lib\BepInEx\0Harmony20.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="assembly_utils">
+      <HintPath>..\Lib\Valheim\assembly_utils.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="assembly_valheim">
       <HintPath>..\Lib\Valheim\assembly_valheim.dll</HintPath>
       <Private>False</Private>
