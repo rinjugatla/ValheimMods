@@ -56,7 +56,7 @@ namespace ChangeEquipmentByWheel
 		{
 			IsEnabled = Config.Bind<bool>("General", "Enabled", true, "Enable this mod.");
 			NexusID = Config.Bind<int>("General", "NexusID", 377, "Nexus mod ID for updates.");
-			ModifierKey = Config.Bind<string>("General", "ModifierKey", "left shift", "Modifier keys for using mods");
+			ModifierKey = Config.Bind<string>("General", "ModifierKey", "left alt", "Modifier keys for using mods");
 			IsReverseWheel = Config.Bind<bool>("General", "ReverseWheel", false, "Do you want to reverse the order in which items are sent?");
 
 			if (!IsEnabled.Value)
