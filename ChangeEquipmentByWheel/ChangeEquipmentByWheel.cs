@@ -72,17 +72,41 @@ namespace ChangeEquipmentByWheel
 
 			if (Input.GetKey(ModifierKey.Value))
 			{
-				var scroll = Input.mouseScrollDelta.y;
+				float scroll = Input.mouseScrollDelta.y;
 				if (scroll == 0)
 					return;
+				int next = GetNextHotbar(scroll);
 
-				// Todo: 右手装備で装備中の場合は飛ばす処理を追加する？
-				int reverse = IsReverseWheel.Value ? -1 : 1;
-				if (scroll > 0)
-					Player.m_localPlayer.UseHotbarItem(NowHotbarIndex + (1 * reverse));
-				else
-					Player.m_localPlayer.UseHotbarItem(NowHotbarIndex - (1 * reverse));
+				Player.m_localPlayer.UseHotbarItem(next);
 			}
+		}
+
+		/// <summary>
+		/// 次に使用するホットバーを取得
+		/// </summary>
+		/// <param name="scroll">スクロール量</param>
+		/// <returns>次の選択位置</returns>
+		private int GetNextHotbar(float scroll)
+        {
+			// スクロール方向
+			int direction = scroll > 0 ? 1 : -1;
+			// スクロール方向補正
+			int reverse = IsReverseWheel.Value ? -1 : 1;
+
+			// 次の選択位置
+			int next = NowHotbarIndex + (direction * reverse);
+
+			// インベントリサイズをオーバーする場合はループさせる
+			int width = Player.m_localPlayer.GetInventory().GetWidth();
+			if (next < 1)
+				next = width;
+			else if (next > width)
+				next = 1;
+
+			if (IsDebug)
+				Debug.Log($"ChangeEquipment: scroll: {scroll} dir: {direction}, next: {next}");
+
+			return next;
 		}
 
 		/// <summary>
