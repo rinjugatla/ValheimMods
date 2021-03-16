@@ -100,7 +100,7 @@ namespace ChangeEquipmentByWheel
 			int width = Player.m_localPlayer.GetInventory().GetWidth();
 			if (next < 1)
 				next = width;
-			else if (next > width)
+			else if (next > width || next > 9)
 				next = 1;
 
 			if (IsDebug)
