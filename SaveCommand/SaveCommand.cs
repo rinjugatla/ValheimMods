@@ -16,7 +16,7 @@ namespace SaveCommand
 	{
 		private const string PluginGuid = "rin_jugatla.SaveCommand";
 		private const string PluginName = "SaveCommand";
-		private const string PluginVersion = "1.2.1";
+		private const string PluginVersion = "1.3.0";
 		/// <summary>
 		/// デバッグが有効か
 		/// </summary>
@@ -53,9 +53,17 @@ namespace SaveCommand
 		/// </summary>
 		private static DateTime PrevSaveTime = DateTime.Now;
 		/// <summary>
+		/// セーブ先フォルダパス
+		/// </summary>
+		private static ConfigEntry<string> SaveDirectory;
+		private static string DefaultSaveDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + "/ValheimSavedata/characters";
+		/// <summary>
 		/// ヒューマノイド
 		/// </summary>
 		private static Humanoid HumanoidInstance;
+		
+
+		
 
 		private void Awake()
 		{
@@ -64,6 +72,7 @@ namespace SaveCommand
 			SaveHotKey = Config.Bind<string>("General", "SaveHotKey", "p", "Save hot key.");
 			SaveIntervalMinutes = Config.Bind<int>("General", "SaveIntervalMinutes", 3, "Save interval.");
 			MaxPlayerSaveBackupCount = Config.Bind<int>("General", "MaxPlayerSaveBackupCount", 3, "Maximum number of player backup files to keep.");
+			SaveDirectory = Config.Bind<string>("General", "SaveDirectory", DefaultSaveDirectory, "Where to save the saved data.");
 
 			ValidateSetting();
 
@@ -88,6 +97,9 @@ namespace SaveCommand
 
 			if (MaxPlayerSaveBackupCount.Value < 0)
 				MaxPlayerSaveBackupCount.Value = 1;
+
+			if (SaveDirectory.Value == "")
+				SaveDirectory.Value = DefaultSaveDirectory;
 		}
 
 		/// <summary>
@@ -147,19 +159,21 @@ namespace SaveCommand
         {
 			private static void Postfix(PlayerProfile __instance)
             {
-				string path = Utils.GetSaveDataPath() + "/characters";
-				Directory.CreateDirectory(path);
+				string originDirectoryPath = Utils.GetSaveDataPath() + "/characters";
+				Directory.CreateDirectory(originDirectoryPath);
+				Directory.CreateDirectory(SaveDirectory.Value);
+				
 				string filename = __instance.GetFilename();
-				string now = $"{path}/{filename}.fch";
-				string old = $"{path}/{filename}.fch.old";
+				string now = $"{originDirectoryPath}/{filename}.fch";
+				string old = $"{originDirectoryPath}/{filename}.fch.old";
 
-				string bak = $"{path}/{filename}_{DateTime.Now:yyyyMMdd_hhmmss}.fch.bak";
+				string bak = $"{SaveDirectory.Value}/{filename}_{DateTime.Now:yyyyMMdd_hhmmss}.fch.bak";
 				if(File.Exists(old))
 					File.Copy(old, bak);
 
 				if(MaxPlayerSaveBackupCount.Value > -1)
                 {
-					IReadOnlyList<FileInfo> files = new DirectoryInfo(path).GetFiles($"{filename}_*.fch.bak").OrderByDescending(n => n.LastWriteTime).ToList();
+					IReadOnlyList<FileInfo> files = new DirectoryInfo(SaveDirectory.Value).GetFiles($"{filename}_*.fch.bak").OrderByDescending(n => n.LastWriteTime).ToList();
 					if (files.Count() > MaxPlayerSaveBackupCount.Value)
 					{
 						ZLog.Log("Deleteing backups...");
@@ -186,6 +200,8 @@ namespace SaveCommand
 			/// </summary>
 			public static void Save()
 			{
+				Debug.Log("Save...?");
+
 				int elapsedTime = (int)(DateTime.Now - PrevSaveTime).TotalMinutes;
 				int leftTime = SaveIntervalMinutes.Value - elapsedTime;
 				if (leftTime > 0)
@@ -207,6 +223,7 @@ namespace SaveCommand
 				PrevSaveTime = DateTime.Now;
 
 				HumanoidInstance.Message(MessageHud.MessageType.Center, $"The save process is complete.", 0, null);
+				ZLog.Log($"[{DateTime.Now.ToString("HH:mm:ss")}]The save process is complete.");
 				return;
 			}
 		}
